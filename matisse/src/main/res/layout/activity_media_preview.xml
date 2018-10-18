@@ -25,7 +25,7 @@
         android:layout_height="match_parent"
         android:background="@android:color/black"/>
 
-    <FrameLayout
+    <FrameLayout android:visibility="gone"
         android:id="@+id/bottom_toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -34,16 +34,7 @@
         android:elevation="4dp"
         tools:targetApi="lollipop">
 
-        <TextView
-            android:id="@+id/button_back"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:foreground="?selectableItemBackground"
-            android:padding="16dp"
-            android:layout_gravity="start"
-            android:text="@string/button_back"
-            android:textColor="?attr/preview.bottomToolbar.back.textColor"
-            android:textSize="16sp"/>
+
 
 
         <LinearLayout
@@ -114,17 +105,28 @@
 
     <FrameLayout
         android:id="@+id/top_toolbar"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
         android:layout_margin="8dp"
         android:fitsSystemWindows="true">
+
+        <TextView
+            android:id="@+id/button_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:foreground="?selectableItemBackground"
+            android:padding="16dp"
+            android:layout_gravity="start"
+            android:text="@string/button_back"
+            android:textColor="?attr/preview.bottomToolbar.back.textColor"
+            android:textSize="16sp"/>
 
         <com.zhihu.matisse.internal.ui.widget.CheckView
             android:id="@+id/check_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="10dp"/>
+            android:padding="10dp"
+            android:layout_gravity="end"/>
     </FrameLayout>
 
 </RelativeLayout>
