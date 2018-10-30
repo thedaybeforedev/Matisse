@@ -66,7 +66,9 @@ public class MediaGrid extends SquareFrameLayout implements View.OnClickListener
     public void onClick(View v) {
         if (mListener != null) {
             if (v == mThumbnail) {
-                mListener.onThumbnailClicked(mThumbnail, mMedia, mPreBindInfo.mViewHolder);
+                //TODO // FIXME: 2018-10-31 썸네일 기능 제거(선택기능으로 변경)
+//                mListener.onThumbnailClicked(mThumbnail, mMedia, mPreBindInfo.mViewHolder);
+                mListener.onCheckViewClicked(mCheckView, mMedia, mPreBindInfo.mViewHolder);
             } else if (v == mCheckView) {
                 mListener.onCheckViewClicked(mCheckView, mMedia, mPreBindInfo.mViewHolder);
             }
