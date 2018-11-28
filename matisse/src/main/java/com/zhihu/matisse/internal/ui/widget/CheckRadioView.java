@@ -22,7 +22,6 @@ public class CheckRadioView extends AppCompatImageView {
     }
 
 
-
     public CheckRadioView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
@@ -42,11 +41,13 @@ public class CheckRadioView extends AppCompatImageView {
         if (enable) {
             setImageResource(R.drawable.ic_preview_radio_on);
             mDrawable = getDrawable();
-            mDrawable.setColorFilter(mSelectedColor, PorterDuff.Mode.SRC_IN);
+            if (mDrawable != null)
+                mDrawable.setColorFilter(mSelectedColor, PorterDuff.Mode.SRC_IN);
         } else {
             setImageResource(R.drawable.ic_preview_radio_off);
             mDrawable = getDrawable();
-            mDrawable.setColorFilter(mUnSelectUdColor, PorterDuff.Mode.SRC_IN);
+            if (mDrawable != null)
+                mDrawable.setColorFilter(mUnSelectUdColor, PorterDuff.Mode.SRC_IN);
         }
     }
 
@@ -55,6 +56,7 @@ public class CheckRadioView extends AppCompatImageView {
         if (mDrawable == null) {
             mDrawable = getDrawable();
         }
-        mDrawable.setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        if (mDrawable != null)
+            mDrawable.setColorFilter(color, PorterDuff.Mode.SRC_IN);
     }
 }
