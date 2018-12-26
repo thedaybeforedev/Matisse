@@ -17,4 +17,5 @@
   <string name="error_file_type">지원되지 않는 파일 유형입니다.</string>
   <string name="button_sure_default">적용</string>
   <string name="button_sure">적용(%1$d)</string>
+
 </resources>

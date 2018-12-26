@@ -37,4 +37,6 @@
     <string name="button_original">原图</string>
     <string name="button_sure_default">适用</string>
     <string name="button_sure">适用(%1$d)</string>
+
+
 </resources>
