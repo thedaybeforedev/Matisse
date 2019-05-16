@@ -13,26 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+package com.zhihu.matisse.internal.utils;
 
-buildscript {
-    repositories {
-        jcenter()
-        google()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.4.1'
-        classpath 'com.novoda:bintray-release:0.8.1'
-    }
-}
+import android.content.Context;
+import android.content.pm.PackageManager;
 
-allprojects {
-    repositories {
-        jcenter()
-        google()
-    }
-}
+public class PackageUtils {
 
-task clean(type: Delete) {
-    delete rootProject.buildDir
+    public static boolean isAppPackageAvailable(Context context, String packageName) {
+        try {
+            if (context == null)
+                return false;
+
+            PackageManager pm = context.getPackageManager();
+            pm.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
+            return true;
+        } catch (PackageManager.NameNotFoundException e) {
+        }
+
+        return false;
+    }
+
 }

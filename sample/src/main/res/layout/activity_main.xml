@@ -61,6 +61,8 @@
             android:textAllCaps="false"
             android:textColor="@android:color/white"
             android:theme="@style/DraculaOverlay"/>
+
+
     </LinearLayout>
 
     <android.support.v7.widget.RecyclerView

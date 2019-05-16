@@ -18,6 +18,7 @@ package com.zhihu.matisse.sample;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -28,6 +29,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -177,6 +179,7 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
         public void onBindViewHolder(UriViewHolder holder, int position) {
             holder.mUri.setText(mUris.get(position).toString());
             holder.mPath.setText(mPaths.get(position));
+            holder.mImageView.setImageBitmap(BitmapFactory.decodeFile(mPaths.get(position)));
 
             holder.mUri.setAlpha(position % 2 == 0 ? 1.0f : 0.54f);
             holder.mPath.setAlpha(position % 2 == 0 ? 1.0f : 0.54f);
@@ -191,11 +194,13 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
 
             private TextView mUri;
             private TextView mPath;
+            private ImageView mImageView;
 
             UriViewHolder(View contentView) {
                 super(contentView);
                 mUri = (TextView) contentView.findViewById(R.id.uri);
                 mPath = (TextView) contentView.findViewById(R.id.path);
+                mImageView = (ImageView)contentView.findViewById(R.id.imageView);
             }
         }
     }

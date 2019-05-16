@@ -16,6 +16,8 @@
 package com.zhihu.matisse.ui;
 
 import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.TypedArray;
 import android.database.Cursor;
@@ -31,13 +33,18 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.zhihu.matisse.R;
+import com.zhihu.matisse.data.OtherPickerItem;
 import com.zhihu.matisse.internal.entity.Album;
 import com.zhihu.matisse.internal.entity.Item;
 import com.zhihu.matisse.internal.entity.SelectionSpec;
@@ -52,11 +59,20 @@ import com.zhihu.matisse.internal.ui.adapter.AlbumsAdapter;
 import com.zhihu.matisse.internal.ui.widget.AlbumsSpinner;
 import com.zhihu.matisse.internal.ui.widget.CheckRadioView;
 import com.zhihu.matisse.internal.ui.widget.IncapableDialog;
+import com.zhihu.matisse.internal.utils.FileUtils;
+import com.zhihu.matisse.internal.utils.IntentUtils;
 import com.zhihu.matisse.internal.utils.MediaStoreCompat;
+import com.zhihu.matisse.internal.utils.PackageUtils;
 import com.zhihu.matisse.internal.utils.PathUtils;
 import com.zhihu.matisse.internal.utils.PhotoMetadataUtils;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Main Activity to display albums and media content (images/videos) in each album
@@ -73,6 +89,8 @@ public class MatisseActivity extends AppCompatActivity implements
     public static final String EXTRA_RESULT_ORIGINAL_ENABLE = "extra_result_original_enable";
     private static final int REQUEST_CODE_PREVIEW = 23;
     private static final int REQUEST_CODE_CAPTURE = 24;
+
+    private static final int REQUEST_CODE_OTHER_APP = 26;
     public static final String CHECK_STATE = "checkState";
     private final AlbumCollection mAlbumCollection = new AlbumCollection();
     private MediaStoreCompat mMediaStoreCompat;
@@ -87,8 +105,11 @@ public class MatisseActivity extends AppCompatActivity implements
     private View mEmptyView;
 
     private LinearLayout mOriginalLayout;
+    private LinearLayout mlOtherPickerContainer;
     private CheckRadioView mOriginal;
     private boolean mOriginalEnable;
+
+    private List<OtherPickerItem> otherPickerItemList = new ArrayList<>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -102,6 +123,7 @@ public class MatisseActivity extends AppCompatActivity implements
             return;
         }
         setContentView(R.layout.activity_matisse);
+
 
         if (mSpec.needOrientationRestriction()) {
             setRequestedOrientation(mSpec.orientation);
@@ -135,6 +157,8 @@ public class MatisseActivity extends AppCompatActivity implements
         mOriginal = findViewById(R.id.original);
         mOriginalLayout.setOnClickListener(this);
 
+        mlOtherPickerContainer = findViewById(R.id.otherPickerContainer);
+
         mSelectedCollection.onCreate(savedInstanceState);
         if (savedInstanceState != null) {
             mOriginalEnable = savedInstanceState.getBoolean(CHECK_STATE);
@@ -150,6 +174,64 @@ public class MatisseActivity extends AppCompatActivity implements
         mAlbumCollection.onCreate(this, this);
         mAlbumCollection.onRestoreInstanceState(savedInstanceState);
         mAlbumCollection.loadAlbums();
+
+        initOthePickerList();
+    }
+
+    private void initOthePickerList() {
+
+
+        {
+            OtherPickerItem otherPickerItem = new OtherPickerItem("com.google.android.apps.photos", R.drawable.googlephoto);
+            if (PackageUtils.isAppPackageAvailable(this, otherPickerItem.packageName)) {
+                otherPickerItemList.add(otherPickerItem);
+            }
+        }
+
+        {
+            OtherPickerItem otherPickerItem = new OtherPickerItem("com.dropbox.android", R.drawable.dropbox);
+            if (PackageUtils.isAppPackageAvailable(this, otherPickerItem.packageName)) {
+                otherPickerItemList.add(otherPickerItem);
+            }
+        }
+        {
+            OtherPickerItem otherPickerItem = new OtherPickerItem("com.android.gallery3d", R.drawable.gallery);
+            if (PackageUtils.isAppPackageAvailable(this, otherPickerItem.packageName)) {
+                otherPickerItemList.add(otherPickerItem);
+            }
+        }
+        {
+            OtherPickerItem otherPickerItem = new OtherPickerItem("com.google.android.gallery3d", R.drawable.gallery);
+            if (PackageUtils.isAppPackageAvailable(this, otherPickerItem.packageName)) {
+                otherPickerItemList.add(otherPickerItem);
+            }
+        }
+        {
+            OtherPickerItem otherPickerItem = new OtherPickerItem("com.sec.android.gallery3d", R.drawable.gallery);
+            if (PackageUtils.isAppPackageAvailable(this, otherPickerItem.packageName)) {
+                otherPickerItemList.add(otherPickerItem);
+            }
+        }
+
+        int index = 0;
+        for (OtherPickerItem item : otherPickerItemList) {
+            mlOtherPickerContainer.setVisibility(View.VISIBLE);
+            View layout = getLayoutInflater().inflate(R.layout.other_picker_item, null);
+            ImageView icon = layout.findViewById(R.id.imageViewPickerIcon);
+            icon.setImageResource(item.iconResourceId);
+            layout.setId(index);
+            layout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    OtherPickerItem item = otherPickerItemList.get(v.getId());
+                    IntentUtils.callActionPicks(MatisseActivity.this, REQUEST_CODE_OTHER_APP, item.packageName);
+                }
+            });
+            mlOtherPickerContainer.addView(layout);
+            index++;
+        }
+
+
     }
 
     @Override
@@ -235,8 +317,61 @@ public class MatisseActivity extends AppCompatActivity implements
                 MatisseActivity.this.revokeUriPermission(contentUri,
                         Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
             finish();
+        } else if (requestCode == REQUEST_CODE_OTHER_APP && resultCode == RESULT_OK) {
+            if (data != null) {
+
+
+                Uri uri = data.getData();
+                ArrayList<String> selectedPaths = new ArrayList<>();
+                ArrayList<Uri> selectedUris = new ArrayList<>();
+                selectedUris.add(uri);
+                String path = PathUtils.getPath(this, uri);
+                if (TextUtils.isEmpty(path)){
+                    File file = FileUtils.pickedExistingPicture(this, uri);
+                    path = file.getAbsolutePath();
+                }
+                selectedPaths.add(path);
+
+
+
+                Intent result = new Intent();
+                result.putParcelableArrayListExtra(EXTRA_RESULT_SELECTION, selectedUris);
+                result.putStringArrayListExtra(EXTRA_RESULT_SELECTION_PATH, selectedPaths);
+                Toast.makeText(MatisseActivity.this, "uri=" + uri.toString(), Toast.LENGTH_LONG).show();
+
+                result.putExtra(EXTRA_RESULT_ORIGINAL_ENABLE, mOriginalEnable);
+                setResult(RESULT_OK, result);
+                finish();
+
+            }
+
+
+//            Intent result = new Intent();
+//            ArrayList<Uri> selectedUris = (ArrayList<Uri>) mSelectedCollection.asListOfUri();
+//            result.putParcelableArrayListExtra(EXTRA_RESULT_SELECTION, selectedUris);
+//            ArrayList<String> selectedPaths = (ArrayList<String>) mSelectedCollection.asListOfString();
+//            result.putStringArrayListExtra(EXTRA_RESULT_SELECTION_PATH, selectedPaths);
+//            result.putExtra(EXTRA_RESULT_ORIGINAL_ENABLE, mOriginalEnable);
+//            setResult(RESULT_OK, result);
+//            finish();
         }
     }
+
+//    private fun onPickedExistingPicturesFromLocalStorage(resultIntent: Intent, activity: Activity, callbacks: Callbacks) {
+//        Log.d(EASYIMAGE_LOG_TAG, "Existing picture returned from local storage")
+//        try {
+//            val uri = resultIntent.data!!
+//                    val photoFile = Files.pickedExistingPicture(activity, uri)
+//            val mediaFile = MediaFile(uri, photoFile)
+//            callbacks.onMediaFilesPicked(arrayOf(mediaFile), MediaSource.DOCUMENTS)
+//        } catch (error: Throwable) {
+//            error.printStackTrace()
+//            callbacks.onImagePickerError(error, MediaSource.DOCUMENTS)
+//        }
+//        cleanup()
+//    }
+
+
 
     private void updateBottomToolbar() {
 
