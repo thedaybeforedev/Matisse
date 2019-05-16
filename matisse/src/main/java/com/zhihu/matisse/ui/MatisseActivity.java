@@ -188,12 +188,12 @@ public class MatisseActivity extends AppCompatActivity implements
             }
         }
 
-        {
-            OtherPickerItem otherPickerItem = new OtherPickerItem("com.dropbox.android", R.drawable.dropbox);
-            if (PackageUtils.isAppPackageAvailable(this, otherPickerItem.packageName)) {
-                otherPickerItemList.add(otherPickerItem);
-            }
-        }
+//        {
+//            OtherPickerItem otherPickerItem = new OtherPickerItem("com.dropbox.android", R.drawable.dropbox);
+//            if (PackageUtils.isAppPackageAvailable(this, otherPickerItem.packageName)) {
+//                otherPickerItemList.add(otherPickerItem);
+//            }
+//        }
         {
             OtherPickerItem otherPickerItem = new OtherPickerItem("com.android.gallery3d", R.drawable.gallery);
             if (PackageUtils.isAppPackageAvailable(this, otherPickerItem.packageName)) {
@@ -277,6 +277,7 @@ public class MatisseActivity extends AppCompatActivity implements
             mOriginalEnable = data.getBooleanExtra(BasePreviewActivity.EXTRA_RESULT_ORIGINAL_ENABLE, false);
             int collectionType = resultBundle.getInt(SelectedItemCollection.STATE_COLLECTION_TYPE,
                     SelectedItemCollection.COLLECTION_UNDEFINED);
+
             if (data.getBooleanExtra(BasePreviewActivity.EXTRA_RESULT_APPLY, false)) {
                 Intent result = new Intent();
                 ArrayList<Uri> selectedUris = new ArrayList<>();
@@ -337,40 +338,15 @@ public class MatisseActivity extends AppCompatActivity implements
                 Intent result = new Intent();
                 result.putParcelableArrayListExtra(EXTRA_RESULT_SELECTION, selectedUris);
                 result.putStringArrayListExtra(EXTRA_RESULT_SELECTION_PATH, selectedPaths);
-                Toast.makeText(MatisseActivity.this, "uri=" + uri.toString(), Toast.LENGTH_LONG).show();
+//                Toast.makeText(MatisseActivity.this, "uri=" + uri.toString(), Toast.LENGTH_LONG).show();
 
                 result.putExtra(EXTRA_RESULT_ORIGINAL_ENABLE, mOriginalEnable);
                 setResult(RESULT_OK, result);
                 finish();
 
             }
-
-
-//            Intent result = new Intent();
-//            ArrayList<Uri> selectedUris = (ArrayList<Uri>) mSelectedCollection.asListOfUri();
-//            result.putParcelableArrayListExtra(EXTRA_RESULT_SELECTION, selectedUris);
-//            ArrayList<String> selectedPaths = (ArrayList<String>) mSelectedCollection.asListOfString();
-//            result.putStringArrayListExtra(EXTRA_RESULT_SELECTION_PATH, selectedPaths);
-//            result.putExtra(EXTRA_RESULT_ORIGINAL_ENABLE, mOriginalEnable);
-//            setResult(RESULT_OK, result);
-//            finish();
         }
     }
-
-//    private fun onPickedExistingPicturesFromLocalStorage(resultIntent: Intent, activity: Activity, callbacks: Callbacks) {
-//        Log.d(EASYIMAGE_LOG_TAG, "Existing picture returned from local storage")
-//        try {
-//            val uri = resultIntent.data!!
-//                    val photoFile = Files.pickedExistingPicture(activity, uri)
-//            val mediaFile = MediaFile(uri, photoFile)
-//            callbacks.onMediaFilesPicked(arrayOf(mediaFile), MediaSource.DOCUMENTS)
-//        } catch (error: Throwable) {
-//            error.printStackTrace()
-//            callbacks.onImagePickerError(error, MediaSource.DOCUMENTS)
-//        }
-//        cleanup()
-//    }
-
 
 
     private void updateBottomToolbar() {
