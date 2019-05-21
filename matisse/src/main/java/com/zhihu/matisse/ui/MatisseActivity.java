@@ -38,6 +38,7 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.zhihu.matisse.R;
 import com.zhihu.matisse.data.OtherPickerItem;
@@ -215,6 +216,17 @@ public class MatisseActivity extends AppCompatActivity implements
             layout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    if (mSelectedCollection.maxSelectableReached()){
+                        String cause = getResources().getQuantityString(
+                                R.plurals.error_over_count,
+                                mSelectedCollection.count(),
+                                mSelectedCollection.count()
+                        );
+
+                        Toast.makeText(MatisseActivity.this, cause, Toast.LENGTH_SHORT).show();
+
+                        return;
+                    }
                     OtherPickerItem item = otherPickerItemList.get(v.getId());
                     IntentUtils.callActionPicks(MatisseActivity.this, REQUEST_CODE_OTHER_APP, item.packageName);
                 }
@@ -317,6 +329,12 @@ public class MatisseActivity extends AppCompatActivity implements
                 Uri uri = data.getData();
                 ArrayList<String> selectedPaths = new ArrayList<>();
                 ArrayList<Uri> selectedUris = new ArrayList<>();
+
+                selectedUris = (ArrayList<Uri>) mSelectedCollection.asListOfUri();
+
+               selectedPaths = (ArrayList<String>) mSelectedCollection.asListOfString();
+
+
                 selectedUris.add(uri);
                 String path = PathUtils.getPath(this, uri);
                 if (TextUtils.isEmpty(path)){
