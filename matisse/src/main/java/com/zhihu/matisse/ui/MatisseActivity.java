@@ -17,6 +17,7 @@ package com.zhihu.matisse.ui;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.graphics.PorterDuff;
@@ -211,7 +212,17 @@ public class MatisseActivity extends AppCompatActivity implements
             mlOtherPickerContainer.setVisibility(View.VISIBLE);
             View layout = getLayoutInflater().inflate(R.layout.other_picker_item, null);
             ImageView icon = layout.findViewById(R.id.imageViewPickerIcon);
-            icon.setImageResource(item.iconResourceId);
+            try
+            {
+                Drawable launcherIcon = getPackageManager().getApplicationIcon(item.packageName);
+                icon.setImageDrawable(launcherIcon);
+            }
+            catch (PackageManager.NameNotFoundException e)
+            {
+                e.printStackTrace();
+                icon.setImageResource(item.iconResourceId);
+            }
+
             layout.setId(index);
             layout.setOnClickListener(new View.OnClickListener() {
                 @Override
