@@ -88,7 +88,8 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
                         .capture(true)
                         .captureStrategy(
                                 new CaptureStrategy(true, "com.zhihu.matisse.sample.fileprovider", "test"))
-                        .maxSelectable(9)
+
+                        .maxSelectable(1)
                         .addFilter(new GifSizeFilter(320, 320, 5 * Filter.K * Filter.K))
                         .gridExpectedSize(
                                 getResources().getDimensionPixelSize(R.dimen.grid_expected_size))
@@ -103,7 +104,7 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
                         })
                         .showSingleMediaType(true)
                         .originalEnable(true)
-                        .maxOriginalSize(10)
+                        .maxOriginalSize(1)
                         .autoHideToolbarOnSingleTap(true)
                         .setOnCheckedListener(isChecked -> {
                             // DO SOMETHING IMMEDIATELY HERE
