@@ -97,9 +97,7 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
                         .restrictOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
                         .thumbnailScale(0.85f)
                         .imageEngine(new GlideEngine())
-                        .setOnSelectedListener((uriList, pathList) -> {
-                            Log.e("onSelected", "onSelected: pathList=" + pathList);
-                        })
+
                         .showSingleMediaType(true)
                         .originalEnable(true)
                         .maxOriginalSize(1)

@@ -541,7 +541,7 @@ public class MatisseActivity extends AppCompatActivity implements
         updateBottomToolbar();
 
         if (mSpec.onSelectedListener != null) {
-            mSpec.onSelectedListener.onSelected(
+            mSpec.onSelectedListener.onSelected(this,
                     mSelectedCollection.asListOfUri(), mSelectedCollection.asListOfString());
         }
     }

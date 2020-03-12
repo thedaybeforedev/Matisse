@@ -138,7 +138,7 @@ public abstract class BasePreviewActivity extends AppCompatActivity implements V
                 updateApplyButton();
 
                 if (mSpec.onSelectedListener != null) {
-                    mSpec.onSelectedListener.onSelected(
+                    mSpec.onSelectedListener.onSelected(BasePreviewActivity.this,
                             mSelectedCollection.asListOfUri(), mSelectedCollection.asListOfString());
                 }
             }
