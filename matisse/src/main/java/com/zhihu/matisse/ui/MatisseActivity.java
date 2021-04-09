@@ -15,6 +15,7 @@
  */
 package com.zhihu.matisse.ui;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -29,6 +30,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -43,6 +46,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.karumi.dexter.Dexter;
+import com.karumi.dexter.PermissionToken;
+import com.karumi.dexter.listener.PermissionDeniedResponse;
+import com.karumi.dexter.listener.PermissionGrantedResponse;
+import com.karumi.dexter.listener.PermissionRequest;
+import com.karumi.dexter.listener.single.PermissionListener;
 import com.zhihu.matisse.R;
 import com.zhihu.matisse.data.OtherPickerItem;
 import com.zhihu.matisse.internal.entity.Album;
@@ -86,10 +95,11 @@ public class MatisseActivity extends AppCompatActivity implements
     public static final String EXTRA_RESULT_SELECTION = "extra_result_selection";
     public static final String EXTRA_RESULT_SELECTION_PATH = "extra_result_selection_path";
     public static final String EXTRA_RESULT_ORIGINAL_ENABLE = "extra_result_original_enable";
-    private static final int REQUEST_CODE_PREVIEW = 23;
-    private static final int REQUEST_CODE_CAPTURE = 24;
+    public static final int REQUEST_CODE_PREVIEW = 23;
+    public static final int REQUEST_CODE_CAPTURE = 24;
 
     private static final int REQUEST_CODE_OTHER_APP = 26;
+
     public static final String CHECK_STATE = "checkState";
     private final AlbumCollection mAlbumCollection = new AlbumCollection();
     private MediaStoreCompat mMediaStoreCompat;
@@ -563,9 +573,21 @@ public class MatisseActivity extends AppCompatActivity implements
 
     @Override
     public void capture() {
-        if (mMediaStoreCompat != null) {
-            mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_CAPTURE);
-        }
+        Dexter.withContext(this)
+                .withPermission(Manifest.permission.CAMERA)
+                .withListener(new PermissionListener() {
+                    @Override public void onPermissionGranted(PermissionGrantedResponse response) {
+                        if (mMediaStoreCompat != null) {
+                            mMediaStoreCompat.dispatchCaptureIntent(MatisseActivity.this, REQUEST_CODE_CAPTURE);
+                        }
+                    }
+                    @Override public void onPermissionDenied(PermissionDeniedResponse response) {/* ... */}
+                    @Override public void onPermissionRationaleShouldBeShown(PermissionRequest permission, PermissionToken token) {
+
+                        token.continuePermissionRequest();
+                    }
+                }).check();
+
     }
 
 }

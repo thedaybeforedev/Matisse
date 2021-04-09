@@ -19,19 +19,29 @@ package com.zhihu.matisse;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Build;
+
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContract;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.StyleRes;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentResultListener;
 
 import com.zhihu.matisse.engine.ImageEngine;
 import com.zhihu.matisse.filter.Filter;
 import com.zhihu.matisse.internal.entity.CaptureStrategy;
 import com.zhihu.matisse.internal.entity.SelectionSpec;
+import com.zhihu.matisse.internal.utils.MediaStoreCompat;
 import com.zhihu.matisse.listener.OnCheckedListener;
 import com.zhihu.matisse.listener.OnSelectedListener;
+import com.zhihu.matisse.ui.CaptureDelegateActivity;
 import com.zhihu.matisse.ui.MatisseActivity;
 
 import java.lang.annotation.Retention;
@@ -63,29 +73,7 @@ import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT;
 public final class SelectionCreator {
     private final Matisse mMatisse;
     private final SelectionSpec mSelectionSpec;
-
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
-    @IntDef({
-            SCREEN_ORIENTATION_UNSPECIFIED,
-            SCREEN_ORIENTATION_LANDSCAPE,
-            SCREEN_ORIENTATION_PORTRAIT,
-            SCREEN_ORIENTATION_USER,
-            SCREEN_ORIENTATION_BEHIND,
-            SCREEN_ORIENTATION_SENSOR,
-            SCREEN_ORIENTATION_NOSENSOR,
-            SCREEN_ORIENTATION_SENSOR_LANDSCAPE,
-            SCREEN_ORIENTATION_SENSOR_PORTRAIT,
-            SCREEN_ORIENTATION_REVERSE_LANDSCAPE,
-            SCREEN_ORIENTATION_REVERSE_PORTRAIT,
-            SCREEN_ORIENTATION_FULL_SENSOR,
-            SCREEN_ORIENTATION_USER_LANDSCAPE,
-            SCREEN_ORIENTATION_USER_PORTRAIT,
-            SCREEN_ORIENTATION_FULL_USER,
-            SCREEN_ORIENTATION_LOCKED
-    })
-    @Retention(RetentionPolicy.SOURCE)
-    @interface ScreenOrientation {
-    }
+    private MediaStoreCompat mMediaStoreCompat;
 
     /**
      * Constructs a new specification builder on the context.
@@ -151,8 +139,9 @@ public final class SelectionCreator {
     public SelectionCreator maxSelectable(int maxSelectable) {
         if (maxSelectable < 1)
             throw new IllegalArgumentException("maxSelectable must be greater than or equal to one");
-        if (mSelectionSpec.maxImageSelectable > 0 || mSelectionSpec.maxVideoSelectable > 0)
+        if (mSelectionSpec.maxImageSelectable > 0 || mSelectionSpec.maxVideoSelectable > 0) {
             throw new IllegalStateException("already set maxImageSelectable and maxVideoSelectable");
+        }
         mSelectionSpec.maxSelectable = maxSelectable;
         return this;
     }
@@ -163,7 +152,7 @@ public final class SelectionCreator {
      *
      * @param maxImageSelectable Maximum selectable count for image.
      * @param maxVideoSelectable Maximum selectable count for video.
-     * @return  {@link SelectionCreator} for fluent API.
+     * @return {@link SelectionCreator} for fluent API.
      */
     public SelectionCreator maxSelectablePerMediaType(int maxImageSelectable, int maxVideoSelectable) {
         if (maxImageSelectable < 1 || maxVideoSelectable < 1)
@@ -213,10 +202,9 @@ public final class SelectionCreator {
         return this;
     }
 
-
     /**
      * Determines Whether to hide top and bottom toolbar in PreView mode ,when user tap the picture
-     * @param enable
+     *
      * @return {@link SelectionCreator} for fluent API.
      */
     public SelectionCreator autoHideToolbarOnSingleTap(boolean enable) {
@@ -348,6 +336,7 @@ public final class SelectionCreator {
      *
      * @param requestCode Identity of the request Activity or Fragment.
      */
+    @Deprecated
     public void forResult(int requestCode) {
         Activity activity = mMatisse.getActivity();
         if (activity == null) {
@@ -364,8 +353,59 @@ public final class SelectionCreator {
         }
     }
 
+    public void forResult(ActivityResultLauncher<Intent> launcher) {
+        Activity activity = mMatisse.getActivity();
+        if (activity == null) {
+            return;
+        }
+
+        Intent intent = new Intent(activity, MatisseActivity.class);
+        launcher.launch(intent);
+    }
+
     public SelectionCreator showPreview(boolean showPreview) {
         mSelectionSpec.showPreview = showPreview;
         return this;
+    }
+
+    /**
+     * take photo directly
+     */
+    @Deprecated
+    public void forCapture(int requestCode) {
+        Activity activity = mMatisse.getActivity();
+        if (activity == null) {
+            return;
+        }
+
+        Intent intent = new Intent(activity, CaptureDelegateActivity.class);
+
+        Fragment fragment = mMatisse.getFragment();
+        if (fragment != null) {
+            fragment.startActivityForResult(intent, requestCode);
+        } else {
+            activity.startActivityForResult(intent, requestCode);
+        }
+    }
+
+    public void forCapture(ActivityResultLauncher<Intent> launcher) {
+        Activity activity = mMatisse.getActivity();
+        if (activity == null) {
+            return;
+        }
+
+        Intent intent = new Intent(activity, CaptureDelegateActivity.class);
+        launcher.launch(intent);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
+    @IntDef({
+            SCREEN_ORIENTATION_UNSPECIFIED, SCREEN_ORIENTATION_LANDSCAPE, SCREEN_ORIENTATION_PORTRAIT, SCREEN_ORIENTATION_USER, SCREEN_ORIENTATION_BEHIND,
+            SCREEN_ORIENTATION_SENSOR, SCREEN_ORIENTATION_NOSENSOR, SCREEN_ORIENTATION_SENSOR_LANDSCAPE, SCREEN_ORIENTATION_SENSOR_PORTRAIT,
+            SCREEN_ORIENTATION_REVERSE_LANDSCAPE, SCREEN_ORIENTATION_REVERSE_PORTRAIT, SCREEN_ORIENTATION_FULL_SENSOR, SCREEN_ORIENTATION_USER_LANDSCAPE,
+            SCREEN_ORIENTATION_USER_PORTRAIT, SCREEN_ORIENTATION_FULL_USER, SCREEN_ORIENTATION_LOCKED
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    @interface ScreenOrientation {
     }
 }

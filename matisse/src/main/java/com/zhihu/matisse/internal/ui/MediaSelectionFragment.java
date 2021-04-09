@@ -18,13 +18,19 @@ package com.zhihu.matisse.internal.ui;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.OnLifecycleEvent;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.zhihu.matisse.R;
 import com.zhihu.matisse.internal.entity.Album;
@@ -41,14 +47,12 @@ public class MediaSelectionFragment extends Fragment implements
         AlbumMediaAdapter.OnMediaClickListener {
 
     public static final String EXTRA_ALBUM = "extra_album";
-
     private final AlbumMediaCollection mAlbumMediaCollection = new AlbumMediaCollection();
     private RecyclerView mRecyclerView;
     private AlbumMediaAdapter mAdapter;
     private SelectionProvider mSelectionProvider;
     private AlbumMediaAdapter.CheckStateListener mCheckStateListener;
     private AlbumMediaAdapter.OnMediaClickListener mOnMediaClickListener;
-
     public static MediaSelectionFragment newInstance(Album album) {
         MediaSelectionFragment fragment = new MediaSelectionFragment();
         Bundle args = new Bundle();
@@ -84,38 +88,40 @@ public class MediaSelectionFragment extends Fragment implements
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.recyclerview);
+        getActivity().getLifecycle().addObserver(new LifecycleObserver() {
+            @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
+            public void onCreated(){
+                Album album = getArguments().getParcelable(EXTRA_ALBUM);
+                mAdapter = new AlbumMediaAdapter(getContext(),
+                        mSelectionProvider.provideSelectedItemCollection(), mRecyclerView);
+                mAdapter.registerCheckStateListener(MediaSelectionFragment.this);
+                mAdapter.registerOnMediaClickListener(MediaSelectionFragment.this);
+                mRecyclerView.setHasFixedSize(true);
+
+                int spanCount;
+                SelectionSpec selectionSpec = SelectionSpec.getInstance();
+                if (selectionSpec.gridExpectedSize > 0) {
+                    spanCount = UIUtils.spanCount(getContext(), selectionSpec.gridExpectedSize);
+                } else {
+                    spanCount = selectionSpec.spanCount;
+                }
+                mRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), spanCount));
+
+                int spacing = getResources().getDimensionPixelSize(R.dimen.media_grid_spacing);
+                mRecyclerView.addItemDecoration(new MediaGridInset(spanCount, spacing, false));
+                mRecyclerView.setAdapter(mAdapter);
+                mAlbumMediaCollection.onCreate(getActivity(), MediaSelectionFragment.this);
+                mAlbumMediaCollection.load(album, selectionSpec.capture, hashCode());
+            }
+
+            @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+            public void onDestroy(){
+            }
+        });
     }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        Album album = getArguments().getParcelable(EXTRA_ALBUM);
-
-        mAdapter = new AlbumMediaAdapter(getContext(),
-                mSelectionProvider.provideSelectedItemCollection(), mRecyclerView);
-        mAdapter.registerCheckStateListener(this);
-        mAdapter.registerOnMediaClickListener(this);
-        mRecyclerView.setHasFixedSize(true);
-
-        int spanCount;
-        SelectionSpec selectionSpec = SelectionSpec.getInstance();
-        if (selectionSpec.gridExpectedSize > 0) {
-            spanCount = UIUtils.spanCount(getContext(), selectionSpec.gridExpectedSize);
-        } else {
-            spanCount = selectionSpec.spanCount;
-        }
-        mRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), spanCount));
-
-        int spacing = getResources().getDimensionPixelSize(R.dimen.media_grid_spacing);
-        mRecyclerView.addItemDecoration(new MediaGridInset(spanCount, spacing, false));
-        mRecyclerView.setAdapter(mAdapter);
-        mAlbumMediaCollection.onCreate(getActivity(), this);
-        mAlbumMediaCollection.load(album, selectionSpec.capture);
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
+    @Override public void onDestroy() {
+        super.onDestroy();
         mAlbumMediaCollection.onDestroy();
     }
 

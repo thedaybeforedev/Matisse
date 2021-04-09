@@ -19,6 +19,7 @@ package com.zhihu.matisse.internal.model;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
@@ -60,8 +61,9 @@ public class AlbumMediaCollection implements LoaderManager.LoaderCallbacks<Curso
         if (context == null) {
             return;
         }
-
-        mCallbacks.onAlbumMediaLoad(data);
+        if (mCallbacks != null){
+            mCallbacks.onAlbumMediaLoad(data);
+        }
     }
 
     @Override
@@ -70,13 +72,14 @@ public class AlbumMediaCollection implements LoaderManager.LoaderCallbacks<Curso
         if (context == null) {
             return;
         }
-
-        mCallbacks.onAlbumMediaReset();
+        if (mCallbacks != null){
+            mCallbacks.onAlbumMediaReset();
+        }
     }
 
     public void onCreate(@NonNull FragmentActivity context, @NonNull AlbumMediaCallbacks callbacks) {
         mContext = new WeakReference<Context>(context);
-        mLoaderManager = context.getSupportLoaderManager();
+        mLoaderManager = LoaderManager.getInstance(context);
         mCallbacks = callbacks;
     }
 
@@ -87,15 +90,15 @@ public class AlbumMediaCollection implements LoaderManager.LoaderCallbacks<Curso
         mCallbacks = null;
     }
 
-    public void load(@Nullable Album target) {
-        load(target, false);
+    public void load(@Nullable Album target,int loaderId) {
+        load(target, false, loaderId);
     }
 
-    public void load(@Nullable Album target, boolean enableCapture) {
+    public void load(@Nullable Album target, boolean enableCapture, int loaderId) {
         Bundle args = new Bundle();
         args.putParcelable(ARGS_ALBUM, target);
         args.putBoolean(ARGS_ENABLE_CAPTURE, enableCapture);
-        mLoaderManager.initLoader(LOADER_ID, args, this);
+        mLoaderManager.initLoader(loaderId, args, this);
     }
 
     public interface AlbumMediaCallbacks {

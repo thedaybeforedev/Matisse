@@ -58,12 +58,6 @@ public class AlbumMediaLoader extends CursorLoader {
     private static final String SELECTION_ALL_FOR_SINGLE_MEDIA_TYPE =
             MediaStore.Files.FileColumns.MEDIA_TYPE + "=?"
                     + " AND " + MediaStore.MediaColumns.SIZE + ">0";
-
-    private static String[] getSelectionArgsForSingleMediaType(int mediaType) {
-        return new String[]{String.valueOf(mediaType)};
-    }
-    // =========================================================
-
     // === params for ordinary album && showSingleMediaType: false ===
     private static final String SELECTION_ALBUM =
             "(" + MediaStore.Files.FileColumns.MEDIA_TYPE + "=?"
@@ -72,6 +66,41 @@ public class AlbumMediaLoader extends CursorLoader {
                     + " AND "
                     + " bucket_id=?"
                     + " AND " + MediaStore.MediaColumns.SIZE + ">0";
+    // =========================================================
+    // === params for ordinary album && showSingleMediaType: true ===
+    private static final String SELECTION_ALBUM_FOR_SINGLE_MEDIA_TYPE =
+            MediaStore.Files.FileColumns.MEDIA_TYPE + "=?"
+                    + " AND "
+                    + " bucket_id=?"
+                    + " AND " + MediaStore.MediaColumns.SIZE + ">0";
+    // === params for album ALL && showSingleMediaType: true && MineType=="image/gif"
+    private static final String SELECTION_ALL_FOR_GIF =
+            MediaStore.Files.FileColumns.MEDIA_TYPE + "=?"
+                    + " AND "
+                    + MediaStore.MediaColumns.MIME_TYPE + "=?"
+                    + " AND " + MediaStore.MediaColumns.SIZE + ">0";
+    // ===============================================================
+    // === params for ordinary album && showSingleMediaType: true  && MineType=="image/gif" ===
+    private static final String SELECTION_ALBUM_FOR_GIF =
+            MediaStore.Files.FileColumns.MEDIA_TYPE + "=?"
+                    + " AND "
+                    + " bucket_id=?"
+                    + " AND "
+                    + MediaStore.MediaColumns.MIME_TYPE + "=?"
+                    + " AND " + MediaStore.MediaColumns.SIZE + ">0";
+    private static final String ORDER_BY = MediaStore.Images.Media.DATE_MODIFIED + " DESC";
+    // ===============================================================
+    private final boolean mEnableCapture;
+
+    private AlbumMediaLoader(Context context, String selection, String[] selectionArgs, boolean capture) {
+        super(context, QUERY_URI, PROJECTION, selection, selectionArgs, ORDER_BY);
+        mEnableCapture = capture;
+    }
+    // ===============================================================
+
+    private static String[] getSelectionArgsForSingleMediaType(int mediaType) {
+        return new String[]{String.valueOf(mediaType)};
+    }
 
     private static String[] getSelectionAlbumArgs(String albumId) {
         return new String[]{
@@ -82,50 +111,16 @@ public class AlbumMediaLoader extends CursorLoader {
     }
     // ===============================================================
 
-    // === params for ordinary album && showSingleMediaType: true ===
-    private static final String SELECTION_ALBUM_FOR_SINGLE_MEDIA_TYPE =
-            MediaStore.Files.FileColumns.MEDIA_TYPE + "=?"
-                    + " AND "
-                    + " bucket_id=?"
-                    + " AND " + MediaStore.MediaColumns.SIZE + ">0";
-
     private static String[] getSelectionAlbumArgsForSingleMediaType(int mediaType, String albumId) {
         return new String[]{String.valueOf(mediaType), albumId};
     }
-    // ===============================================================
-
-    // === params for album ALL && showSingleMediaType: true && MineType=="image/gif"
-    private static final String SELECTION_ALL_FOR_GIF =
-            MediaStore.Files.FileColumns.MEDIA_TYPE + "=?"
-                    + " AND "
-                    + MediaStore.MediaColumns.MIME_TYPE + "=?"
-                    + " AND " + MediaStore.MediaColumns.SIZE + ">0";
 
     private static String[] getSelectionArgsForGifType(int mediaType) {
         return new String[]{String.valueOf(mediaType), "image/gif"};
     }
-    // ===============================================================
-
-    // === params for ordinary album && showSingleMediaType: true  && MineType=="image/gif" ===
-    private static final String SELECTION_ALBUM_FOR_GIF =
-            MediaStore.Files.FileColumns.MEDIA_TYPE + "=?"
-                    + " AND "
-                    + " bucket_id=?"
-                    + " AND "
-                    + MediaStore.MediaColumns.MIME_TYPE + "=?"
-                    + " AND " + MediaStore.MediaColumns.SIZE + ">0";
 
     private static String[] getSelectionAlbumArgsForGifType(int mediaType, String albumId) {
         return new String[]{String.valueOf(mediaType), albumId, "image/gif"};
-    }
-    // ===============================================================
-
-    private static final String ORDER_BY = MediaStore.Images.Media.DATE_MODIFIED + " DESC";
-    private final boolean mEnableCapture;
-
-    private AlbumMediaLoader(Context context, String selection, String[] selectionArgs, boolean capture) {
-        super(context, QUERY_URI, PROJECTION, selection, selectionArgs, ORDER_BY);
-        mEnableCapture = capture;
     }
 
     public static CursorLoader newInstance(Context context, Album album, boolean capture) {

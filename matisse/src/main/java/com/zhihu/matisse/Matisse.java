@@ -18,9 +18,15 @@ package com.zhihu.matisse;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
+
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContract;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.zhihu.matisse.internal.entity.CaptureStrategy;
 import com.zhihu.matisse.ui.MatisseActivity;
 
 import java.lang.ref.WeakReference;
@@ -38,6 +44,9 @@ public final class Matisse {
     private Matisse(Activity activity) {
         this(activity, null);
     }
+
+    private final ActivityResultContract<Intent, ActivityResult> activityResultContract =
+            new ActivityResultContracts.StartActivityForResult();
 
     private Matisse(Fragment fragment) {
         this(fragment.getActivity(), fragment);
@@ -78,7 +87,7 @@ public final class Matisse {
      * Obtain user selected media' {@link Uri} list in the starting Activity or Fragment.
      *
      * @param data Intent passed by {@link Activity#onActivityResult(int, int, Intent)} or
-     *             {@link Fragment#onActivityResult(int, int, Intent)}.
+     * {@link Fragment#onActivityResult(int, int, Intent)}.
      * @return User selected media' {@link Uri} list.
      */
     public static List<Uri> obtainResult(Intent data) {
@@ -89,7 +98,7 @@ public final class Matisse {
      * Obtain user selected media path list in the starting Activity or Fragment.
      *
      * @param data Intent passed by {@link Activity#onActivityResult(int, int, Intent)} or
-     *             {@link Fragment#onActivityResult(int, int, Intent)}.
+     * {@link Fragment#onActivityResult(int, int, Intent)}.
      * @return User selected media path list.
      */
     public static List<String> obtainPathResult(Intent data) {
@@ -100,7 +109,7 @@ public final class Matisse {
      * Obtain state whether user decide to use selected media in original
      *
      * @param data Intent passed by {@link Activity#onActivityResult(int, int, Intent)} or
-     *             {@link Fragment#onActivityResult(int, int, Intent)}.
+     * {@link Fragment#onActivityResult(int, int, Intent)}.
      * @return Whether use original photo
      */
     public static boolean obtainOriginalState(Intent data) {
@@ -126,10 +135,11 @@ public final class Matisse {
      * <p>
      * Types not included in the set will still be shown in the grid but can't be chosen.
      *
-     * @param mimeTypes          MIME types set user can choose from.
-     * @param mediaTypeExclusive Whether can choose images and videos at the same time during one single choosing
-     *                           process. true corresponds to not being able to choose images and videos at the same
-     *                           time, and false corresponds to being able to do this.
+     * @param mimeTypes MIME types set user can choose from.
+     * @param mediaTypeExclusive Whether can choose images and videos at the same time during one
+     * single choosing
+     * process. true corresponds to not being able to choose images and videos at the same
+     * time, and false corresponds to being able to do this.
      * @return {@link SelectionCreator} to build select specifications.
      * @see MimeType
      * @see SelectionCreator
@@ -148,4 +158,16 @@ public final class Matisse {
         return mFragment != null ? mFragment.get() : null;
     }
 
+    @Deprecated
+    public void performCapture(CaptureStrategy captureStrategy, int requestCode) {
+        choose(MimeType.ofImage(), false).capture(true)
+                .captureStrategy(captureStrategy)
+                .forCapture(requestCode);
+    }
+
+    public void performCapture(CaptureStrategy captureStrategy, ActivityResultLauncher<Intent> launcher) {
+        choose(MimeType.ofImage(), false).capture(true)
+                .captureStrategy(captureStrategy)
+                .forCapture(launcher);
+    }
 }
