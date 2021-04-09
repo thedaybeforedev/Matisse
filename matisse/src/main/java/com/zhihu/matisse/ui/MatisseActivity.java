@@ -559,7 +559,7 @@ public class MatisseActivity extends AppCompatActivity implements
     @Override
     public void onMaxSelectReached() {
         if (mSpec.onSelectedListener != null) {
-            mSpec.onSelectedListener.onMaxSelectableReached(this);
+            mSpec.onSelectedListener.onMaxSelectableReached(this, mSelectedCollection.asListOfUri());
         }
     }
 
