@@ -28,4 +28,5 @@ public interface OnSelectedListener {
      * @param pathList the selected item file path list.
      */
     void onSelected(@NonNull Activity matisseActivity, @NonNull List<Uri> uriList, @NonNull List<String> pathList);
+    void onMaxSelectableReached(@NonNull Activity matisseActivity);
 }

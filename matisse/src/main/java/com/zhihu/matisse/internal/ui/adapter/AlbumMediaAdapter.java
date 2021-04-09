@@ -27,6 +27,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.zhihu.matisse.R;
 import com.zhihu.matisse.internal.entity.Album;
@@ -180,6 +181,12 @@ public class AlbumMediaAdapter extends
                 if (assertAddSelection(holder.itemView.getContext(), item)) {
                     mSelectedCollection.add(item);
                     notifyCheckStateChanged();
+                }else if(mSelectedCollection.maxSelectableReached()){
+//                    Toast.makeText(holder.itemView.getContext(), "maxSelectableReached", Toast.LENGTH_LONG).show();
+//                    mSelectionSpec.onSelectedListener.onMaxSelectableReached();
+                    if (mCheckStateListener != null){
+                        mCheckStateListener.onMaxSelectReached();
+                    }
                 }
             } else {
                 mSelectedCollection.remove(item);
@@ -266,6 +273,7 @@ public class AlbumMediaAdapter extends
 
     public interface CheckStateListener {
         void onUpdate();
+        void onMaxSelectReached();
     }
 
     public interface OnMediaClickListener {

@@ -557,6 +557,13 @@ public class MatisseActivity extends AppCompatActivity implements
     }
 
     @Override
+    public void onMaxSelectReached() {
+        if (mSpec.onSelectedListener != null) {
+            mSpec.onSelectedListener.onMaxSelectableReached(this);
+        }
+    }
+
+    @Override
     public void onMediaClick(Album album, Item item, int adapterPosition) {
         Intent intent = new Intent(this, AlbumPreviewActivity.class);
         intent.putExtra(AlbumPreviewActivity.EXTRA_ALBUM, album);
