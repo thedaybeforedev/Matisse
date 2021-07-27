@@ -190,12 +190,12 @@ public class MatisseActivity extends AppCompatActivity implements
     private void initOtherPickerList() {
 
 
-        {
-            OtherPickerItem otherPickerItem = new OtherPickerItem("com.google.android.apps.photos", R.drawable.googlephoto);
-            if (PackageUtils.isAppPackageAvailable(this, otherPickerItem.packageName)) {
-                otherPickerItemList.add(otherPickerItem);
-            }
-        }
+//        {
+//            OtherPickerItem otherPickerItem = new OtherPickerItem("com.google.android.apps.photos", R.drawable.googlephoto);
+//            if (PackageUtils.isAppPackageAvailable(this, otherPickerItem.packageName)) {
+//                otherPickerItemList.add(otherPickerItem);
+//            }
+//        }
 
 //        {
 //            OtherPickerItem otherPickerItem = new OtherPickerItem("com.dropbox.android", R.drawable.dropbox);
