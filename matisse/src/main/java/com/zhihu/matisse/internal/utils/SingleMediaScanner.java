@@ -31,11 +31,17 @@ public class SingleMediaScanner implements MediaScannerConnection.MediaScannerCo
         this.mMsc.connect();
     }
 
-    @Override public void onMediaScannerConnected() {
-        mMsc.scanFile(mPath, null);
+    @Override
+    public void onMediaScannerConnected() {
+        try {
+            mMsc.scanFile(mPath, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    @Override public void onScanCompleted(String mPath, Uri mUri) {
+    @Override
+    public void onScanCompleted(String mPath, Uri mUri) {
         mMsc.disconnect();
         if (mListener != null) {
             mListener.onScanFinish();
