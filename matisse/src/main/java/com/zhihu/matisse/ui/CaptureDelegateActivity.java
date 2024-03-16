@@ -16,6 +16,9 @@ package com.zhihu.matisse.ui;
  * limitations under the License.
  */
 
+import static com.zhihu.matisse.ui.MatisseActivity.EXTRA_RESULT_SELECTION;
+import static com.zhihu.matisse.ui.MatisseActivity.EXTRA_RESULT_SELECTION_PATH;
+
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -32,9 +35,6 @@ import com.zhihu.matisse.internal.utils.MediaStoreCompat;
 import com.zhihu.matisse.internal.utils.SingleMediaScanner;
 
 import java.util.ArrayList;
-
-import static com.zhihu.matisse.ui.MatisseActivity.EXTRA_RESULT_SELECTION;
-import static com.zhihu.matisse.ui.MatisseActivity.EXTRA_RESULT_SELECTION_PATH;
 
 /**
  * Main Activity to display albums and media content (images/videos) in each album
@@ -83,7 +83,7 @@ public class CaptureDelegateActivity extends AppCompatActivity implements AlbumM
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode != RESULT_OK){
+        if (resultCode != RESULT_OK) {
             finish();
             return;
         }
@@ -103,13 +103,20 @@ public class CaptureDelegateActivity extends AppCompatActivity implements AlbumM
                 CaptureDelegateActivity.this.revokeUriPermission(contentUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
             }
 
-            new SingleMediaScanner(this.getApplicationContext(), path, new SingleMediaScanner.ScanListener() {
-                @Override
-                public void onScanFinish() {
-                    Log.i("SingleMediaScanner", "scan finish!");
-                }
-            });
-            finish();
+            try {
+
+                new SingleMediaScanner(this.getApplicationContext(), path, new SingleMediaScanner.ScanListener() {
+                    @Override
+                    public void onScanFinish() {
+                        Log.i("SingleMediaScanner", "scan finish!");
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+
+                finish();
+            }
         }
     }
 

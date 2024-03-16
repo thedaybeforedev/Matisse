@@ -3,6 +3,9 @@ package com.zhihu.matisse.internal.utils;
 import android.content.Context;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
+import android.os.Build;
+
+import com.zhihu.matisse.BuildConfig;
 
 /**
  * @author 工藤
@@ -25,7 +28,12 @@ public class SingleMediaScanner implements MediaScannerConnection.MediaScannerCo
     }
 
     public SingleMediaScanner(Context context, String mPath, ScanListener mListener) {
-        this.mPath = mPath;
+        if (mPath == null || mPath.isEmpty()) {
+            throw new IllegalArgumentException("Path cannot be null or empty");
+        }
+        if (context == null) {
+            throw new IllegalArgumentException("Context cannot be null or empty");
+        }
         this.mListener = mListener;
         this.mMsc = new MediaScannerConnection(context, this);
         this.mMsc.connect();

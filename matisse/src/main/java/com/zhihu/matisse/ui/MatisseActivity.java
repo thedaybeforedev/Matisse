@@ -29,14 +29,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
-import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -45,6 +37,12 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
 
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.PermissionToken;
@@ -74,8 +72,6 @@ import com.zhihu.matisse.internal.utils.MediaStoreCompat;
 import com.zhihu.matisse.internal.utils.PackageUtils;
 import com.zhihu.matisse.internal.utils.PathUtils;
 import com.zhihu.matisse.internal.utils.PhotoMetadataUtils;
-
-
 import com.zhihu.matisse.internal.utils.SingleMediaScanner;
 
 import java.io.File;
@@ -227,13 +223,10 @@ public class MatisseActivity extends AppCompatActivity implements
             mlOtherPickerContainer.setVisibility(View.VISIBLE);
             View layout = getLayoutInflater().inflate(R.layout.other_picker_item, null);
             ImageView icon = layout.findViewById(R.id.imageViewPickerIcon);
-            try
-            {
+            try {
                 Drawable launcherIcon = getPackageManager().getApplicationIcon(item.packageName);
                 icon.setImageDrawable(launcherIcon);
-            }
-            catch (PackageManager.NameNotFoundException e)
-            {
+            } catch (PackageManager.NameNotFoundException e) {
                 e.printStackTrace();
                 icon.setImageResource(item.iconResourceId);
             }
@@ -242,7 +235,7 @@ public class MatisseActivity extends AppCompatActivity implements
             layout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (mSelectedCollection.maxSelectableReached()){
+                    if (mSelectedCollection.maxSelectableReached()) {
                         String cause = getResources().getQuantityString(
                                 R.plurals.error_over_count,
                                 mSelectedCollection.count(),
@@ -348,12 +341,18 @@ public class MatisseActivity extends AppCompatActivity implements
                 MatisseActivity.this.revokeUriPermission(contentUri,
                         Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-            new SingleMediaScanner(this.getApplicationContext(), path, new SingleMediaScanner.ScanListener() {
-                @Override public void onScanFinish() {
-                    Log.i("SingleMediaScanner", "scan finish!");
-                }
-            });
-            finish();
+            try {
+                new SingleMediaScanner(this.getApplicationContext(), path, new SingleMediaScanner.ScanListener() {
+                    @Override
+                    public void onScanFinish() {
+                        Log.i("SingleMediaScanner", "scan finish!");
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                finish();
+            }
         } else if (requestCode == REQUEST_CODE_OTHER_APP && resultCode == RESULT_OK) {
             if (data != null) {
 
@@ -364,17 +363,16 @@ public class MatisseActivity extends AppCompatActivity implements
 
                 selectedUris = (ArrayList<Uri>) mSelectedCollection.asListOfUri();
 
-               selectedPaths = (ArrayList<String>) mSelectedCollection.asListOfString();
+                selectedPaths = (ArrayList<String>) mSelectedCollection.asListOfString();
 
 
                 selectedUris.add(uri);
                 String path = PathUtils.getPath(this, uri);
-                if (TextUtils.isEmpty(path)){
+                if (TextUtils.isEmpty(path)) {
                     File file = FileUtils.pickedExistingPicture(this, uri);
                     path = file.getAbsolutePath();
                 }
                 selectedPaths.add(path);
-
 
 
                 Intent result = new Intent();
@@ -583,13 +581,18 @@ public class MatisseActivity extends AppCompatActivity implements
         Dexter.withContext(this)
                 .withPermission(Manifest.permission.CAMERA)
                 .withListener(new PermissionListener() {
-                    @Override public void onPermissionGranted(PermissionGrantedResponse response) {
+                    @Override
+                    public void onPermissionGranted(PermissionGrantedResponse response) {
                         if (mMediaStoreCompat != null) {
                             mMediaStoreCompat.dispatchCaptureIntent(MatisseActivity.this, REQUEST_CODE_CAPTURE);
                         }
                     }
-                    @Override public void onPermissionDenied(PermissionDeniedResponse response) {/* ... */}
-                    @Override public void onPermissionRationaleShouldBeShown(PermissionRequest permission, PermissionToken token) {
+
+                    @Override
+                    public void onPermissionDenied(PermissionDeniedResponse response) {/* ... */}
+
+                    @Override
+                    public void onPermissionRationaleShouldBeShown(PermissionRequest permission, PermissionToken token) {
 
                         token.continuePermissionRequest();
                     }
