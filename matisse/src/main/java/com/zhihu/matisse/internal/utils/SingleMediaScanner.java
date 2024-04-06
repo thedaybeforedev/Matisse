@@ -34,6 +34,7 @@ public class SingleMediaScanner implements MediaScannerConnection.MediaScannerCo
         if (context == null) {
             throw new IllegalArgumentException("Context cannot be null or empty");
         }
+        this.mPath = mPath;
         this.mListener = mListener;
         this.mMsc = new MediaScannerConnection(context, this);
         this.mMsc.connect();
