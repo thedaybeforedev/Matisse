@@ -32,4 +32,11 @@
     <string name="error_file_type">Tipo de arquivo não suportado</string>
     <string name="error_type_conflict">Não é possível selecionar arquivos de imagem e vídeo simultaneamente</string>
     <string name="error_no_video_activity">Nenhum player de vídeo disponível para reprodução</string>
+
+    <string name="image_crop_button_edit">Edit Image</string>
+    <string name="complete">Done</string>
+    <string name="common_confirm">OK</string>
+    <string name="image_picker_apply_default">Next</string>
+    <string name="image_picker_apply">Next(%1$d)</string>
+
 </resources>

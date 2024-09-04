@@ -23,10 +23,16 @@
 
     <application>
         <activity android:name="com.zhihu.matisse.ui.MatisseActivity"/>
+        <activity android:name=".ui.ImageCropActivity"/>
+        <activity
+            android:name="com.yalantis.ucrop.UCropActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
         <activity
             android:name="com.zhihu.matisse.ui.CaptureDelegateActivity"
             android:theme="@style/Matisse.TransparentTheme" />
         <activity android:name="com.zhihu.matisse.internal.ui.AlbumPreviewActivity"/>
         <activity android:name="com.zhihu.matisse.internal.ui.SelectedPreviewActivity"/>
+        <activity android:name=".ui.ImageCropActivity"/>
     </application>
 </manifest>

@@ -30,5 +30,11 @@
     <string name="error_file_type">Loại tệp không được hỗ trợ</string>
     <string name="button_sure_default">Áp dụng</string>
     <string name="button_sure">Áp dụng(%1$d)</string>
+    <string name="image_picker_apply_default">Tiếp</string>
+    <string name="image_picker_apply">Tiếp(%1$d)</string>
+
+    <string name="image_crop_button_edit">Sửa ảnh</string>
+    <string name="complete">OK</string>
+    <string name="common_confirm">OK</string>
 
 </resources>

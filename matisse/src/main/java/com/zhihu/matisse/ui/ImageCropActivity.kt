@@ -1,0 +1,333 @@
+package com.zhihu.matisse.ui
+
+import android.content.Context
+import android.content.Intent
+import android.content.res.ColorStateList
+import android.content.res.Configuration
+import android.graphics.Color
+import android.net.Uri
+import android.os.Build
+import android.os.Bundle
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
+import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.widget.LinearLayout
+import android.widget.RelativeLayout
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
+import androidx.viewpager.widget.ViewPager.OnPageChangeListener
+import com.google.android.material.appbar.AppBarLayout
+import com.yalantis.ucrop.UCrop
+import com.zhihu.matisse.R
+import com.zhihu.matisse.adapter.ImageCropViewPagerAdapter
+import com.zhihu.matisse.viewpager.SwipeControlViewpager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+
+class ImageCropActivity : AppCompatActivity() {
+    var imageCropViewPagerAdapter: ImageCropViewPagerAdapter? = null
+    var viewPagerImageCrop: SwipeControlViewpager? = null
+    var textViewToolbar: TextView? = null
+    var relativeProgressBar: RelativeLayout? = null
+    var relativeContainer: RelativeLayout? = null
+    var appBarLayout: AppBarLayout? = null
+
+
+    private var imagePathArrays: Array<String>? = null
+    private var storedImageFileNameArrays: Array<String>? = null
+    private var storeFilePath: String? = null
+
+    var linearBottomButtonEdit: LinearLayout? = null
+    private var toolbar: Toolbar? = null
+    private var currentPage = 0
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_imagecrop)
+        onBindLayout()
+        onBindData()
+    }
+
+    fun onBindLayout() {
+        viewPagerImageCrop = findViewById(R.id.viewPagerImageCrop)
+        textViewToolbar = findViewById(R.id.textViewToolbar)
+        relativeProgressBar = findViewById(R.id.relativeProgressBar)
+        relativeContainer = findViewById(R.id.relativeContainer)
+        appBarLayout = findViewById(R.id.appBarLayout)
+        linearBottomButtonEdit = findViewById(R.id.linearBottomButtonEdit)
+        linearBottomButtonEdit!!.setOnClickListener(View.OnClickListener {
+            imageCropStart()
+        })
+
+        setLightModeStatusBar()
+    }
+
+    private fun setLightModeStatusBar() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val decor = window.decorView
+            decor.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+        }
+    }
+
+    protected fun setToolbar() {
+        toolbar = findViewById<View>(R.id.toolbar) as Toolbar
+        if (toolbar == null) return
+        setSupportActionBar(toolbar)
+        val actionBar = supportActionBar
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true)
+            actionBar.setHomeButtonEnabled(true)
+            actionBar.setDisplayShowTitleEnabled(false)
+            val xBtn = ContextCompat.getDrawable(this, R.drawable.ic_x)
+
+            xBtn?.setTintList(
+                when {
+                    !isDarkMode(this) -> ColorStateList.valueOf(Color.BLACK)
+                    else -> ColorStateList.valueOf(Color.WHITE)
+                }
+            )
+            actionBar.setHomeAsUpIndicator(xBtn)
+        }
+    }
+
+    fun onBindData() {
+        if (intent.extras != null) {
+            val intent = intent
+            imagePathArrays = intent.getStringArrayExtra(PARAM_IMAGEPATH_ARRAY)
+            storedImageFileNameArrays = intent.getStringArrayExtra(PARAM_STORE_FILE_NAME_ARRAY)
+            if (imagePathArrays == null && intent.getStringExtra(PARAM_IMAGEPATH) != null) {
+                imagePathArrays = arrayOf(intent.getStringExtra(PARAM_IMAGEPATH)?:"")
+            }
+            if (storedImageFileNameArrays == null && intent.getStringExtra(PARAM_STORE_FILE_NAME) != null) {
+                storedImageFileNameArrays = arrayOf(intent.getStringExtra(PARAM_STORE_FILE_NAME)?:"")
+            }
+
+            currentPage = intent.getIntExtra(BUNDLE_POSITION, 0)
+            storeFilePath = intent.getStringExtra(PARAM_STORE_FILE_PATH)
+
+            imageCropViewPagerAdapter = ImageCropViewPagerAdapter(supportFragmentManager, this, imagePathArrays?.toMutableList(), storedImageFileNameArrays?.toMutableList() ,storeFilePath)
+            viewPagerImageCrop!!.adapter = imageCropViewPagerAdapter
+            viewPagerImageCrop!!.addOnPageChangeListener(viewPagerOnPageChangeListener)
+            if (currentPage > 0) {
+                viewPagerImageCrop!!.setCurrentItem(currentPage, false)
+            }
+        }
+
+        setCurrentPage()
+        setToolbar()
+        invalidateOptionsMenu()
+    }
+
+    override fun onPostCreate(savedInstanceState: Bundle?) {
+        super.onPostCreate(savedInstanceState)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // Inflate the menu items for use in the action bar
+        val inflater = menuInflater
+        inflater.inflate(R.menu.actionbar_image_crop, menu)
+
+        var spanString: SpannableString? = null
+
+        menu.findItem(R.id.action_save).isVisible = true
+        menu.findItem(R.id.action_save).setTitle(R.string.complete)
+        spanString = SpannableString(menu.findItem(R.id.action_save).title.toString())
+        spanString.setSpan(ForegroundColorSpan(ContextCompat.getColor(this, R.color.colorTextPrimary)), 0, spanString.length, 0) //fix the color to white
+
+        menu.findItem(R.id.action_save).title = spanString
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.action_save) {
+            //전체 이미지 저장 처리
+            saveAllImagesAndExit()
+        } else if (item.itemId == android.R.id.home) {
+            finish()
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+
+    override fun finish() {
+        super.finish()
+        overridePendingTransition(R.anim.no_change, R.anim.slide_down_translate)
+    }
+
+    val isPlatformOverLollipop: Boolean
+        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+
+    override fun invalidateOptionsMenu() {
+        super.invalidateOptionsMenu()
+
+        relativeContainer?.setBackgroundColor(ContextCompat.getColor(this, R.color.colorBackgroundPrimary))
+        appBarLayout?.setBackgroundColor(ContextCompat.getColor(this, R.color.colorBackgroundPrimary))
+        if (!isPlatformOverLollipop) {
+            val apply = getString(R.string.common_confirm)
+            setMenuTextColor(this, toolbar, apply, R.id.action_save, R.color.colorTextPrimary)
+        }
+
+    }
+
+    private fun imageCropStart() {
+
+        val imagePath = imagePathArrays?.get(currentPage)
+
+        if (imagePath != null && imagePath.isNotEmpty()) {
+
+            val file = File(imagePath)
+            val uri = Uri.fromFile(file)
+            val outputUri = Uri.fromFile(File("${cacheDir}/images",
+                storedImageFileNameArrays?.get(currentPage) ?: storedImageFileNameArrays?.get(0)
+            ))
+
+            // UCrop 설정
+            val uCrop = UCrop.of(uri, outputUri)
+            val uCropOption = UCrop.Options()
+            uCropOption.setCompressionQuality(25)
+            uCrop.withMaxResultSize(1920, 1920)
+            uCrop.withOptions(uCropOption);
+
+            uCrop.start(this@ImageCropActivity, UCrop.REQUEST_CROP)
+        } else {
+            Log.e("UCropError", "Invalid image path: $imagePath")
+            // Handle error: Show a message or take appropriate action
+        }
+
+        invalidateOptionsMenu()
+    }
+
+
+
+    private fun saveAllImagesAndExit() {
+        showProgressLoading()
+
+        CoroutineScope(Dispatchers.IO).launch {
+            var saveImage : Array<String> = arrayOf()
+            val savedFile: MutableList<String> = mutableListOf()
+            val size = imageCropViewPagerAdapter!!.getStoredImageFileNameList()?.size ?: 0
+
+            for (i in 0 until size) {
+                withContext(Dispatchers.Main) {
+                    viewPagerImageCrop?.setCurrentItem(i, false)
+                    delay(400)
+                }
+
+                savedFile.add(imageCropViewPagerAdapter!!.saveCroppedImages(i)!!)
+
+            }
+            saveImage = savedFile.toTypedArray()
+
+            val resultValue = Intent()
+            resultValue.putExtra(PARAM_IMAGEPATH_ARRAY, saveImage)
+            setResult(RESULT_OK, resultValue)
+            finish()
+            hideProgressLoading()
+        }
+
+    }
+
+    private val viewPagerOnPageChangeListener: OnPageChangeListener = object :
+        OnPageChangeListener {
+        override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
+        override fun onPageSelected(position: Int) {
+            currentPage = position
+            setCurrentPage()
+        }
+
+        override fun onPageScrollStateChanged(state: Int) {}
+    }
+
+    private fun setCurrentPage() {
+        textViewToolbar!!.text = "" + (currentPage + 1) + "/" + imageCropViewPagerAdapter!!.count
+    }
+
+    fun hideProgressLoading() {
+        if (relativeProgressBar != null) {
+            relativeProgressBar!!.post(Runnable {
+                if (relativeProgressBar == null) return@Runnable
+                relativeProgressBar!!.visibility = View.GONE
+            })
+        }
+    }
+
+    fun showProgressLoading() {
+        if (relativeProgressBar != null) {
+            relativeProgressBar!!.post(Runnable {
+                if (relativeProgressBar == null) return@Runnable
+                relativeProgressBar!!.visibility = View.VISIBLE
+            })
+        }
+    }
+
+    fun isDarkMode(context: Context, showLog: Boolean = false): Boolean {
+        val configuration = context.resources.configuration
+        val currentNightMode = configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        when (currentNightMode) {
+            Configuration.UI_MODE_NIGHT_NO -> {
+                if(showLog) Log.e("TAG", "UI_MODE_NIGHT_NO")
+            }
+            Configuration.UI_MODE_NIGHT_YES -> {
+                if(showLog) Log.e("TAG", "UI_MODE_NIGHT_YES")
+                return true
+            }
+        }
+        return false
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == UCrop.REQUEST_CROP && resultCode == RESULT_OK) {
+            val resultUri = UCrop.getOutput(data!!)
+            // 결과 URI 사용
+            resultUri?.path?.let {
+                imagePathArrays?.set(currentPage, it)
+                imageCropViewPagerAdapter!!.cropChangImage(currentPage, it)
+            }
+
+
+        } else if (resultCode == UCrop.RESULT_ERROR) {
+            val cropError = UCrop.getError(data!!)
+            // 에러 처리
+        }else{
+
+        }
+    }
+
+
+
+
+    companion object {
+        const val PARAM_IMAGEPATH = "imagePath"
+        const val PARAM_STORE_FILE_NAME = "storeFileName"
+        const val PARAM_IMAGEPATH_ARRAY = "imagePathArray"
+        const val PARAM_STORE_FILE_NAME_ARRAY = "storeFileNameArray"
+        const val PARAM_STORE_FILE_PATH = "storeFilePath"
+        const val BUNDLE_POSITION = "position"
+
+        private fun setMenuTextColor(context: Context, toolbar: Toolbar?, title: String, menuResId: Int, colorRes: Int) {
+            toolbar!!.post {
+                val settingsMenuItem = toolbar.findViewById<View>(menuResId)
+                if (settingsMenuItem is TextView) {
+                    settingsMenuItem.setTextColor(ContextCompat.getColor(context, colorRes))
+                } else { // you can ignore this branch, because usually there is not the situation
+                    val menu = toolbar.menu
+                    val item = menu.findItem(menuResId)
+                    val s = SpannableString(title)
+                    s.setSpan(ForegroundColorSpan(ContextCompat.getColor(context, colorRes)), 0, title.length, 0)
+                    item.title = s
+                }
+            }
+        }
+    }
+}

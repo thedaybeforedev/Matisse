@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:com.aboutjsp.thedaybefore="http://schemas.android.com/apk/res-auto" >
+    <item android:id="@+id/action_save"
+        android:title="@string/complete"
+        com.aboutjsp.thedaybefore:showAsAction="always|withText"  />
+
+    <!--
+    <item android:title="@string/load_btn" android:id="@+id/action_load"
+        com.aboutjsp.thedaybefore:showAsAction="withText"  />
+    -->
+</menu>

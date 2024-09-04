@@ -17,5 +17,12 @@
   <string name="error_file_type">지원되지 않는 파일 유형입니다.</string>
   <string name="button_sure_default">적용</string>
   <string name="button_sure">적용(%1$d)</string>
+  <string name="image_picker_apply_default">다음</string>
+  <string name="image_picker_apply">다음(%1$d)</string>
+
+
+  <string name="image_crop_button_edit">이미지 편집</string>
+  <string name="complete">완료</string>
+  <string name="common_confirm">적용</string>
 
 </resources>

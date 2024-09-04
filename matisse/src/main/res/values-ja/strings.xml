@@ -30,5 +30,12 @@
     <string name="error_file_type">サポートされてないファイル形式です</string>
     <string name="button_sure_default">適用</string>
     <string name="button_sure">適用(%1$d)</string>
+    <string name="image_picker_apply_default">次へ</string>
+    <string name="image_picker_apply">次へ(%1$d)</string>
+
+
+    <string name="image_crop_button_edit">画像編集</string>
+    <string name="complete">OK</string>
+    <string name="common_confirm">OK</string>
 
 </resources>

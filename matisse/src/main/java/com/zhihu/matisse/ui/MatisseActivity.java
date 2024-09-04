@@ -38,6 +38,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -75,7 +79,9 @@ import com.zhihu.matisse.internal.utils.PhotoMetadataUtils;
 import com.zhihu.matisse.internal.utils.SingleMediaScanner;
 
 import java.io.File;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -115,6 +121,39 @@ public class MatisseActivity extends AppCompatActivity implements
     private boolean mOriginalEnable;
 
     private List<OtherPickerItem> otherPickerItemList = new ArrayList<>();
+
+    // ActivityResultLauncher 초기화
+    private ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    if (result.getResultCode() == RESULT_OK) {
+                        // 결과가 성공적으로 반환되었을 때 처리할 로직
+                        Intent data = result.getData();
+                        if (data != null) {
+                            // 예: 데이터를 처리하는 로직
+                            String[] croppedImageUri = data.getStringArrayExtra(ImageCropActivity.PARAM_IMAGEPATH_ARRAY);
+
+                            Intent intent = new Intent();
+                            ArrayList<Uri> selectedUris = new ArrayList<>();
+                            for (String s : croppedImageUri) {
+                                Uri uri = Uri.parse(s);
+                                selectedUris.add(uri);
+                            }
+                            ArrayList<String> selectedImagePath = new ArrayList<>(Arrays.asList(croppedImageUri));
+                            intent.putParcelableArrayListExtra(EXTRA_RESULT_SELECTION, selectedUris);
+                            intent.putStringArrayListExtra(EXTRA_RESULT_SELECTION_PATH, selectedImagePath);
+                            intent.putExtra(EXTRA_RESULT_ORIGINAL_ENABLE, mOriginalEnable);
+                            setResult(RESULT_OK, intent);
+                            finish();
+                        }
+                    } else {
+                        // 다른 경우 처리
+                    }
+                }
+            }
+    );
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -395,15 +434,15 @@ public class MatisseActivity extends AppCompatActivity implements
         if (selectedCount == 0) {
             mButtonPreview.setEnabled(false);
             mButtonApply.setEnabled(false);
-            mButtonApply.setText(getString(R.string.button_apply_default));
+            mButtonApply.setText(getString(R.string.image_picker_apply_default));
         } else if (selectedCount == 1 && mSpec.singleSelectionModeEnabled()) {
             mButtonPreview.setEnabled(true);
-            mButtonApply.setText(R.string.button_apply_default);
+            mButtonApply.setText(R.string.image_picker_apply_default);
             mButtonApply.setEnabled(true);
         } else {
             mButtonPreview.setEnabled(true);
             mButtonApply.setEnabled(true);
-            mButtonApply.setText(getString(R.string.button_apply, selectedCount));
+            mButtonApply.setText(getString(R.string.image_picker_apply, selectedCount));
         }
 
 
@@ -465,8 +504,32 @@ public class MatisseActivity extends AppCompatActivity implements
             ArrayList<String> selectedPaths = (ArrayList<String>) mSelectedCollection.asListOfString();
             result.putStringArrayListExtra(EXTRA_RESULT_SELECTION_PATH, selectedPaths);
             result.putExtra(EXTRA_RESULT_ORIGINAL_ENABLE, mOriginalEnable);
-            setResult(RESULT_OK, result);
-            finish();
+
+            if(mSpec.isUseCrop){
+                //크롭 화면으로 이동
+                Intent cropIntent = new Intent(this, ImageCropActivity.class);
+                String[] fileNames = new String[selectedPaths.size()];
+                String[] storedFileNames = new String[selectedPaths.size()];
+
+                LocalDateTime now = LocalDateTime.now();
+                String hhmmss = String.format("%02d%02d%02d", now.getHour(), now.getMinute(), now.getSecond());
+
+                for (int i = 0; i < fileNames.length; i++) {
+                    fileNames[i] = selectedPaths.get(i);
+                    storedFileNames[i] = String.format("%s_%d.%s", hhmmss, i, "jpg");
+                }
+
+                cropIntent.putExtra(ImageCropActivity.PARAM_IMAGEPATH_ARRAY, fileNames);
+                cropIntent.putExtra(ImageCropActivity.PARAM_STORE_FILE_NAME_ARRAY, storedFileNames);
+                String storePath = new File(getCacheDir().toString() + "/images").getAbsolutePath();
+                cropIntent.putExtra(ImageCropActivity.PARAM_STORE_FILE_PATH, storePath);
+                activityResultLauncher.launch(cropIntent);
+
+            }else {
+                setResult(RESULT_OK, result);
+                finish();
+            }
+
         } else if (v.getId() == R.id.originalLayout) {
             int count = countOverMaxSize();
             if (count > 0) {
@@ -600,4 +663,9 @@ public class MatisseActivity extends AppCompatActivity implements
 
     }
 
+
+    @Override
+    public void onPointerCaptureChanged(boolean hasCapture) {
+        super.onPointerCaptureChanged(hasCapture);
+    }
 }

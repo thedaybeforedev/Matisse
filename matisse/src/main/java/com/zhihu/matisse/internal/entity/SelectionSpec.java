@@ -57,6 +57,7 @@ public final class SelectionSpec {
     public int originalMaxSize;
     public OnCheckedListener onCheckedListener;
     public boolean showPreview;
+    public boolean isUseCrop = false;  //이미지 선택 후 크롭 사용 여부
 
     private SelectionSpec() {
     }

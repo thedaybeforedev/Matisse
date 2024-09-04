@@ -39,6 +39,12 @@
     <string name="button_original">Original</string>
     <string name="button_sure_default">Apply</string>
     <string name="button_sure">Apply(%1$d)</string>
+    <string name="image_picker_apply_default">Next</string>
+    <string name="image_picker_apply">Next(%1$d)</string>
+
+    <string name="image_crop_button_edit">Edit Image</string>
+    <string name="complete">Done</string>
+    <string name="common_confirm">OK</string>
 
     <plurals name="error_over_count">
         <item quantity="one">@string/error_over_count</item>

@@ -40,4 +40,11 @@
     <string name="button_original">Оригинал</string>
     <string name="button_sure">Применить(%1$d)</string>
     <string name="button_sure_default">Применить</string>
+    <string name="image_picker_apply_default">Next</string>
+    <string name="image_picker_apply">Next(%1$d)</string>
+
+    <string name="image_crop_button_edit">Edit Image</string>
+    <string name="complete">Done</string>
+    <string name="common_confirm">OK</string>
+
 </resources>

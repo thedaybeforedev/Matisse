@@ -20,19 +20,13 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Build;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContract;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.StyleRes;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentResultListener;
 
 import com.zhihu.matisse.engine.ImageEngine;
 import com.zhihu.matisse.filter.Filter;
@@ -43,9 +37,11 @@ import com.zhihu.matisse.listener.OnCheckedListener;
 import com.zhihu.matisse.listener.OnSelectedListener;
 import com.zhihu.matisse.ui.CaptureDelegateActivity;
 import com.zhihu.matisse.ui.MatisseActivity;
+import com.zhihu.matisse.ui.ImageCropActivity;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Set;
 
@@ -361,6 +357,39 @@ public final class SelectionCreator {
 
         Intent intent = new Intent(activity, MatisseActivity.class);
         launcher.launch(intent);
+    }
+
+    /**
+     *
+     * @param imageList :
+     * @param launcher
+     */
+    public void forCropResult(String[] imageList, ActivityResultLauncher<Intent> launcher) {
+        Activity activity = mMatisse.getActivity();
+        if (activity == null) {
+            return;
+        }
+
+        Intent cropIntent = new Intent(activity, ImageCropActivity.class);
+        String[] fileNames = imageList;
+        String[] storedFileNames = new String[imageList.length];
+
+        LocalDateTime now = LocalDateTime.now();
+        String hhmmss = String.format("%02d%02d%02d", now.getHour(), now.getMinute(), now.getSecond());
+
+        for (int i = 0; i < fileNames.length; i++) {
+            storedFileNames[i] = String.format("%s_%d.%s", hhmmss, i, "jpg");
+        }
+
+        cropIntent.putExtra(ImageCropActivity.PARAM_IMAGEPATH_ARRAY, fileNames);
+        cropIntent.putExtra(ImageCropActivity.PARAM_STORE_FILE_NAME_ARRAY, storedFileNames);
+
+        launcher.launch(cropIntent);
+    }
+
+    public SelectionCreator setUseCrop(boolean isUseCrop){
+        mSelectionSpec.isUseCrop = isUseCrop;
+        return this;
     }
 
     public SelectionCreator showPreview(boolean showPreview) {

@@ -30,6 +30,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -38,10 +42,11 @@ import com.tbruyelle.rxpermissions2.RxPermissions;
 import com.zhihu.matisse.Matisse;
 import com.zhihu.matisse.MimeType;
 import com.zhihu.matisse.engine.impl.GlideEngine;
-import com.zhihu.matisse.engine.impl.PicassoEngine;
 import com.zhihu.matisse.filter.Filter;
 import com.zhihu.matisse.internal.entity.CaptureStrategy;
+import com.zhihu.matisse.ui.ImageCropActivity;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class SampleActivity extends AppCompatActivity implements View.OnClickListener {
@@ -49,6 +54,38 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
     private static final int REQUEST_CODE_CHOOSE = 23;
 
     private UriAdapter mAdapter;
+
+    private ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    if (result.getResultCode() == RESULT_OK) {
+                        // 결과가 성공적으로 반환되었을 때 처리할 로직
+                        Intent data = result.getData();
+                        if (data != null) {
+                            // 예: 데이터를 처리하는 로직
+                            String[] croppedImageUri = data.getStringArrayExtra(ImageCropActivity.PARAM_IMAGEPATH_ARRAY);
+                            //Toast.makeText(SampleActivity.this, String.valueOf(croppedImageUri.length), Toast.LENGTH_SHORT).show();
+                            Uri[] uris = new Uri[3];
+                            for (int i = 0; i < uris.length; i++) {
+                                if(i == 0){
+                                    uris[0] = Uri.parse(croppedImageUri[0]);
+                                }else if(i == 1){
+                                    uris[1] = Uri.parse(croppedImageUri[1]);
+                                }else if(i == 2){
+                                    uris[2] = Uri.parse(croppedImageUri[2]);
+                                }
+                            }
+                            mAdapter.setData(Arrays.asList(uris), Arrays.asList(croppedImageUri));
+                        }
+
+                    } else {
+                        // 다른 경우 처리
+                    }
+                }
+            }
+    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,7 +127,7 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
                         .captureStrategy(
                                 new CaptureStrategy(true, "com.zhihu.matisse.sample.fileprovider", "test"))
 
-                        .maxSelectable(1)
+                        .maxSelectable(10)
                         .addFilter(new GifSizeFilter(320, 320, 5 * Filter.K * Filter.K))
                         .gridExpectedSize(
                                 getResources().getDimensionPixelSize(R.dimen.grid_expected_size))
@@ -105,19 +142,26 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
                         .setOnCheckedListener(isChecked -> {
                             Log.e("isChecked", "onCheck: isChecked=" + isChecked);
                         })
+                        .setUseCrop(true)
                         .forResult(REQUEST_CODE_CHOOSE);
                 break;
             case R.id.dracula:
+
+                String[] fileListArray = new String[3];
+
+                for (int i = 0; i < fileListArray.length; i++) {
+                    if(i == 0){
+                        fileListArray[0] = "/data/user/0/com.zhihu.matisse.sample/cache/images/ddayId_storyDateId_110811_0.jpg";
+                    }else if(i == 1){
+                        fileListArray[1] = "/data/user/0/com.zhihu.matisse.sample/cache/images/ddayId_storyDateId_110811_1.jpg";
+                    }else if(i == 2){
+                        fileListArray[2] = "/data/user/0/com.zhihu.matisse.sample/cache/images/ddayId_storyDateId_110811_2.jpg";
+                    }
+                }
+                //크롭만 사용할때 예시
                 Matisse.from(SampleActivity.this)
                         .choose(MimeType.ofImage())
-                        .theme(R.style.Matisse_Dracula)
-                        .countable(false)
-                        .addFilter(new GifSizeFilter(320, 320, 5 * Filter.K * Filter.K))
-                        .maxSelectable(9)
-                        .originalEnable(true)
-                        .maxOriginalSize(10)
-                        .imageEngine(new PicassoEngine())
-                        .forResult(REQUEST_CODE_CHOOSE);
+                        .forCropResult(fileListArray, activityResultLauncher);
                 break;
             case R.id.only_gif:
                 Matisse.from(SampleActivity.this)
@@ -147,7 +191,6 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE_CHOOSE && resultCode == RESULT_OK) {
             mAdapter.setData(Matisse.obtainResult(data), Matisse.obtainPathResult(data));
-            Log.e("OnActivityResult ", String.valueOf(Matisse.obtainOriginalState(data)));
         }
     }
 
