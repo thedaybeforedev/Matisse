@@ -7,7 +7,7 @@ import android.net.Uri;
 import java.io.File;
 import java.io.IOException;
 
-public class Compressor {
+public class MatisseCompressor {
     //max width and height values of the compressed image is taken as 612x816
     private int maxWidth = 1920;
     private int maxHeight = 1920;
@@ -15,31 +15,31 @@ public class Compressor {
     private int quality = 80;
     private String destinationDirectoryPath;
 
-    public Compressor(Context context) {
+    public MatisseCompressor(Context context) {
         destinationDirectoryPath = context.getCacheDir().getPath() + File.separator + "images";
     }
 
-    public Compressor setMaxWidth(int maxWidth) {
+    public MatisseCompressor setMaxWidth(int maxWidth) {
         this.maxWidth = maxWidth;
         return this;
     }
 
-    public Compressor setMaxHeight(int maxHeight) {
+    public MatisseCompressor setMaxHeight(int maxHeight) {
         this.maxHeight = maxHeight;
         return this;
     }
 
-    public Compressor setCompressFormat(Bitmap.CompressFormat compressFormat) {
+    public MatisseCompressor setCompressFormat(Bitmap.CompressFormat compressFormat) {
         this.compressFormat = compressFormat;
         return this;
     }
 
-    public Compressor setQuality(int quality) {
+    public MatisseCompressor setQuality(int quality) {
         this.quality = quality;
         return this;
     }
 
-    public Compressor setDestinationDirectoryPath(String destinationDirectoryPath) {
+    public MatisseCompressor setDestinationDirectoryPath(String destinationDirectoryPath) {
         this.destinationDirectoryPath = destinationDirectoryPath;
         return this;
     }
@@ -49,17 +49,17 @@ public class Compressor {
     }
 
     public File compressToFile(File imageFile, String compressedFileName) throws IOException {
-        return ImageUtil.compressImage(imageFile, maxWidth, maxHeight, compressFormat, quality,
+        return MatisseImageUtil.compressImage(imageFile, maxWidth, maxHeight, compressFormat, quality,
                 destinationDirectoryPath + File.separator + compressedFileName);
     }
 
     public File compressUriToFile(Context context, Uri imageFile, String compressedFileName) throws IOException {
-        return ImageUtil.compressImage(context, imageFile, maxWidth, maxHeight, compressFormat, quality,
+        return MatisseImageUtil.compressImage(context, imageFile, maxWidth, maxHeight, compressFormat, quality,
                 destinationDirectoryPath + File.separator + compressedFileName);
     }
 
     public Bitmap compressToBitmap(File imageFile) throws IOException {
-        return ImageUtil.decodeSampledBitmapFromFile(imageFile, maxWidth, maxHeight);
+        return MatisseImageUtil.decodeSampledBitmapFromFile(imageFile, maxWidth, maxHeight);
     }
 
 

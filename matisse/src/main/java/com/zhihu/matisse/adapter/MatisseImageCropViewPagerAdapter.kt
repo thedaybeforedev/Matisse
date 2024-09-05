@@ -1,24 +1,22 @@
 package com.zhihu.matisse.adapter
 
 import android.content.Context
-import android.graphics.BitmapFactory
 import android.text.TextUtils
-import android.util.Log
 import android.util.SparseArray
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
-import com.zhihu.matisse.Util.Compressor
-import com.zhihu.matisse.ui.ImageCropViewFragment
+import com.zhihu.matisse.Util.MatisseCompressor
+import com.zhihu.matisse.ui.MatisseImageCropViewFragment
 import java.io.File
 
-class ImageCropViewPagerAdapter(fm: FragmentManager?, var mContext: Context, imagePathList: MutableList<String>?, storedImageFileNameList: MutableList<String>?, storeFilePath: String?) : FragmentPagerAdapter(fm!!) {
+class MatisseImageCropViewPagerAdapter(fm: FragmentManager?, var mContext: Context, imagePathList: MutableList<String>?, storedImageFileNameList: MutableList<String>?, storeFilePath: String?) : FragmentPagerAdapter(fm!!) {
     var mLayoutInflater: LayoutInflater
     private val imagePathList: List<String>?
     private val storedImageFileNameList: List<String>?
-    private val imageCropViewFragmentSparseArray: SparseArray<ImageCropViewFragment?>?
+    private val imageCropViewFragmentSparseArray: SparseArray<MatisseImageCropViewFragment?>?
     private var storeFilePath: String?
 
     override fun getCount(): Int {
@@ -28,15 +26,15 @@ class ImageCropViewPagerAdapter(fm: FragmentManager?, var mContext: Context, ima
     override fun getItem(position: Int): Fragment {
         val imagePath = imagePathList?.get(position)
 
-        val imageCropViewFragment = ImageCropViewFragment.newInstance(imagePath)
-        imageCropViewFragmentSparseArray!!.append(position, imageCropViewFragment as ImageCropViewFragment)
+        val imageCropViewFragment = MatisseImageCropViewFragment.newInstance(imagePath)
+        imageCropViewFragmentSparseArray!!.append(position, imageCropViewFragment as MatisseImageCropViewFragment)
         return imageCropViewFragment
     }
 
 
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
         val createdFragment = super.instantiateItem(container, position) as Fragment
-        val imageCropViewFragment = createdFragment as ImageCropViewFragment
+        val imageCropViewFragment = createdFragment as MatisseImageCropViewFragment
         imageCropViewFragmentSparseArray!!.append(position, imageCropViewFragment)
         return createdFragment
     }
@@ -56,7 +54,7 @@ class ImageCropViewPagerAdapter(fm: FragmentManager?, var mContext: Context, ima
     fun saveCroppedImages(position: Int): String? {
         if(imageCropViewFragmentSparseArray == null) return null
 
-        val compressor = Compressor(mContext)
+        val compressor = MatisseCompressor(mContext)
         if (!TextUtils.isEmpty(storeFilePath)) {
             compressor.setDestinationDirectoryPath(storeFilePath)
         }
@@ -73,7 +71,7 @@ class ImageCropViewPagerAdapter(fm: FragmentManager?, var mContext: Context, ima
             }
     }
 
-    fun getImageCropViewFragmentByPosition(position: Int): ImageCropViewFragment? {
+    fun getImageCropViewFragmentByPosition(position: Int): MatisseImageCropViewFragment? {
         return if (imageCropViewFragmentSparseArray != null && imageCropViewFragmentSparseArray[position] != null) {
             imageCropViewFragmentSparseArray[position]
         } else null

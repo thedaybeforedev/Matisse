@@ -133,7 +133,7 @@ public class MatisseActivity extends AppCompatActivity implements
                         Intent data = result.getData();
                         if (data != null) {
                             // 예: 데이터를 처리하는 로직
-                            String[] croppedImageUri = data.getStringArrayExtra(ImageCropActivity.PARAM_IMAGEPATH_ARRAY);
+                            String[] croppedImageUri = data.getStringArrayExtra(MatisseImageCropActivity.PARAM_IMAGEPATH_ARRAY);
 
                             Intent intent = new Intent();
                             ArrayList<Uri> selectedUris = new ArrayList<>();
@@ -507,7 +507,7 @@ public class MatisseActivity extends AppCompatActivity implements
 
             if(mSpec.isUseCrop){
                 //크롭 화면으로 이동
-                Intent cropIntent = new Intent(this, ImageCropActivity.class);
+                Intent cropIntent = new Intent(this, MatisseImageCropActivity.class);
                 String[] fileNames = new String[selectedPaths.size()];
                 String[] storedFileNames = new String[selectedPaths.size()];
 
@@ -519,10 +519,10 @@ public class MatisseActivity extends AppCompatActivity implements
                     storedFileNames[i] = String.format("%s_%d.%s", hhmmss, i, "jpg");
                 }
 
-                cropIntent.putExtra(ImageCropActivity.PARAM_IMAGEPATH_ARRAY, fileNames);
-                cropIntent.putExtra(ImageCropActivity.PARAM_STORE_FILE_NAME_ARRAY, storedFileNames);
+                cropIntent.putExtra(MatisseImageCropActivity.PARAM_IMAGEPATH_ARRAY, fileNames);
+                cropIntent.putExtra(MatisseImageCropActivity.PARAM_STORE_FILE_NAME_ARRAY, storedFileNames);
                 String storePath = new File(getCacheDir().toString() + "/images").getAbsolutePath();
-                cropIntent.putExtra(ImageCropActivity.PARAM_STORE_FILE_PATH, storePath);
+                cropIntent.putExtra(MatisseImageCropActivity.PARAM_STORE_FILE_PATH, storePath);
                 activityResultLauncher.launch(cropIntent);
 
             }else {

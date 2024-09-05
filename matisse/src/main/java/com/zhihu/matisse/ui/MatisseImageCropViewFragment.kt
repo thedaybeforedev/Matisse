@@ -21,7 +21,7 @@ import com.bumptech.glide.signature.ObjectKey
 import com.zhihu.matisse.R
 import java.io.File
 
-class ImageCropViewFragment : Fragment() {
+class MatisseImageCropViewFragment : Fragment() {
 
     var imagePath: String? = null
     var cropImageView: AppCompatImageView? = null
@@ -73,7 +73,7 @@ class ImageCropViewFragment : Fragment() {
     fun onBindData() {
         if (arguments != null) {
             if(imagePath == null){
-                imagePath = requireArguments().getString(ImageCropActivity.PARAM_IMAGEPATH)
+                imagePath = requireArguments().getString(MatisseImageCropActivity.PARAM_IMAGEPATH)
             }
             loadCropImage()
         }
@@ -171,10 +171,10 @@ class ImageCropViewFragment : Fragment() {
 
 
     companion object {
-        fun newInstance(imagePath: String?): ImageCropViewFragment {
-            val fragment = ImageCropViewFragment()
+        fun newInstance(imagePath: String?): MatisseImageCropViewFragment {
+            val fragment = MatisseImageCropViewFragment()
             val args = Bundle()
-            args.putString(ImageCropActivity.PARAM_IMAGEPATH, imagePath)
+            args.putString(MatisseImageCropActivity.PARAM_IMAGEPATH, imagePath)
             fragment.arguments = args
             return fragment
         }

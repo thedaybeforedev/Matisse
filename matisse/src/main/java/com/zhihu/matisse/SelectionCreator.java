@@ -37,7 +37,7 @@ import com.zhihu.matisse.listener.OnCheckedListener;
 import com.zhihu.matisse.listener.OnSelectedListener;
 import com.zhihu.matisse.ui.CaptureDelegateActivity;
 import com.zhihu.matisse.ui.MatisseActivity;
-import com.zhihu.matisse.ui.ImageCropActivity;
+import com.zhihu.matisse.ui.MatisseImageCropActivity;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -370,7 +370,7 @@ public final class SelectionCreator {
             return;
         }
 
-        Intent cropIntent = new Intent(activity, ImageCropActivity.class);
+        Intent cropIntent = new Intent(activity, MatisseImageCropActivity.class);
         String[] fileNames = imageList;
         String[] storedFileNames = new String[imageList.length];
 
@@ -381,8 +381,8 @@ public final class SelectionCreator {
             storedFileNames[i] = String.format("%s_%d.%s", hhmmss, i, "jpg");
         }
 
-        cropIntent.putExtra(ImageCropActivity.PARAM_IMAGEPATH_ARRAY, fileNames);
-        cropIntent.putExtra(ImageCropActivity.PARAM_STORE_FILE_NAME_ARRAY, storedFileNames);
+        cropIntent.putExtra(MatisseImageCropActivity.PARAM_IMAGEPATH_ARRAY, fileNames);
+        cropIntent.putExtra(MatisseImageCropActivity.PARAM_STORE_FILE_NAME_ARRAY, storedFileNames);
 
         launcher.launch(cropIntent);
     }

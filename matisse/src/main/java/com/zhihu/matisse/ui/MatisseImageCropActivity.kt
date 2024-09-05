@@ -24,8 +24,8 @@ import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 import com.google.android.material.appbar.AppBarLayout
 import com.yalantis.ucrop.UCrop
 import com.zhihu.matisse.R
-import com.zhihu.matisse.adapter.ImageCropViewPagerAdapter
-import com.zhihu.matisse.viewpager.SwipeControlViewpager
+import com.zhihu.matisse.adapter.MatisseImageCropViewPagerAdapter
+import com.zhihu.matisse.viewpager.MatisseSwipeControlViewpager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -33,9 +33,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 
-class ImageCropActivity : AppCompatActivity() {
-    var imageCropViewPagerAdapter: ImageCropViewPagerAdapter? = null
-    var viewPagerImageCrop: SwipeControlViewpager? = null
+class MatisseImageCropActivity : AppCompatActivity() {
+    var imageCropViewPagerAdapter: MatisseImageCropViewPagerAdapter? = null
+    var viewPagerImageCrop: MatisseSwipeControlViewpager? = null
     var textViewToolbar: TextView? = null
     var relativeProgressBar: RelativeLayout? = null
     var relativeContainer: RelativeLayout? = null
@@ -115,7 +115,7 @@ class ImageCropActivity : AppCompatActivity() {
             currentPage = intent.getIntExtra(BUNDLE_POSITION, 0)
             storeFilePath = intent.getStringExtra(PARAM_STORE_FILE_PATH)
 
-            imageCropViewPagerAdapter = ImageCropViewPagerAdapter(supportFragmentManager, this, imagePathArrays?.toMutableList(), storedImageFileNameArrays?.toMutableList() ,storeFilePath)
+            imageCropViewPagerAdapter = MatisseImageCropViewPagerAdapter(supportFragmentManager, this, imagePathArrays?.toMutableList(), storedImageFileNameArrays?.toMutableList() ,storeFilePath)
             viewPagerImageCrop!!.adapter = imageCropViewPagerAdapter
             viewPagerImageCrop!!.addOnPageChangeListener(viewPagerOnPageChangeListener)
             if (currentPage > 0) {
@@ -198,7 +198,7 @@ class ImageCropActivity : AppCompatActivity() {
             uCrop.withMaxResultSize(1920, 1920)
             uCrop.withOptions(uCropOption);
 
-            uCrop.start(this@ImageCropActivity, UCrop.REQUEST_CROP)
+            uCrop.start(this@MatisseImageCropActivity, UCrop.REQUEST_CROP)
         } else {
             Log.e("UCropError", "Invalid image path: $imagePath")
             // Handle error: Show a message or take appropriate action

@@ -9,7 +9,6 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.text.TextUtils;
-import android.util.Log;
 
 import androidx.exifinterface.media.ExifInterface;
 
@@ -18,9 +17,9 @@ import java.io.FileDescriptor;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-class ImageUtil {
+class MatisseImageUtil {
 
-    private ImageUtil() {
+    private MatisseImageUtil() {
 
     }
 

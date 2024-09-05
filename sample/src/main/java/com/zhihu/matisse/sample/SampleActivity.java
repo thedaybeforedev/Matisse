@@ -44,7 +44,7 @@ import com.zhihu.matisse.MimeType;
 import com.zhihu.matisse.engine.impl.GlideEngine;
 import com.zhihu.matisse.filter.Filter;
 import com.zhihu.matisse.internal.entity.CaptureStrategy;
-import com.zhihu.matisse.ui.ImageCropActivity;
+import com.zhihu.matisse.ui.MatisseImageCropActivity;
 
 import java.util.Arrays;
 import java.util.List;
@@ -65,7 +65,7 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
                         Intent data = result.getData();
                         if (data != null) {
                             // 예: 데이터를 처리하는 로직
-                            String[] croppedImageUri = data.getStringArrayExtra(ImageCropActivity.PARAM_IMAGEPATH_ARRAY);
+                            String[] croppedImageUri = data.getStringArrayExtra(MatisseImageCropActivity.PARAM_IMAGEPATH_ARRAY);
                             //Toast.makeText(SampleActivity.this, String.valueOf(croppedImageUri.length), Toast.LENGTH_SHORT).show();
                             Uri[] uris = new Uri[3];
                             for (int i = 0; i < uris.length; i++) {

@@ -1,22 +1,20 @@
 package com.zhihu.matisse.viewpager;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.animation.Interpolator;
-import android.widget.Scroller;
 
 import androidx.viewpager.widget.ViewPager;
 
 import java.lang.reflect.Field;
 
-public class SwipeControlViewpager extends ViewPager {
+public class MatisseSwipeControlViewpager extends ViewPager {
 
     private boolean enabled;
     private ScrollerCustomDuration mScroller = null;
 
-    public SwipeControlViewpager(Context context, AttributeSet attrs) {
+    public MatisseSwipeControlViewpager(Context context, AttributeSet attrs) {
         super(context, attrs);
         this.enabled = true;
         postInitViewPager();
