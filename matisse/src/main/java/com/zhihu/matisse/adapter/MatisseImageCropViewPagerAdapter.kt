@@ -12,9 +12,10 @@ import com.zhihu.matisse.Util.MatisseCompressor
 import com.zhihu.matisse.ui.MatisseImageCropViewFragment
 import java.io.File
 
-class MatisseImageCropViewPagerAdapter(fm: FragmentManager?, var mContext: Context, imagePathList: MutableList<String>?, storedImageFileNameList: MutableList<String>?, storeFilePath: String?) : FragmentPagerAdapter(fm!!) {
+class MatisseImageCropViewPagerAdapter(fm: FragmentManager?, var mContext: Context, imagePathList: MutableList<String>?, imageUriList: MutableList<String>?, storedImageFileNameList: MutableList<String>?, storeFilePath: String?) : FragmentPagerAdapter(fm!!) {
     var mLayoutInflater: LayoutInflater
     private val imagePathList: List<String>?
+    private val imageUriList: List<String>?
     private val storedImageFileNameList: List<String>?
     private val imageCropViewFragmentSparseArray: SparseArray<MatisseImageCropViewFragment?>?
     private var storeFilePath: String?
@@ -25,8 +26,8 @@ class MatisseImageCropViewPagerAdapter(fm: FragmentManager?, var mContext: Conte
 
     override fun getItem(position: Int): Fragment {
         val imagePath = imagePathList?.get(position)
-
-        val imageCropViewFragment = MatisseImageCropViewFragment.newInstance(imagePath)
+        val imageUri = imageUriList?.get(position)
+        val imageCropViewFragment = MatisseImageCropViewFragment.newInstance(imagePath, imageUri)
         imageCropViewFragmentSparseArray!!.append(position, imageCropViewFragment as MatisseImageCropViewFragment)
         return imageCropViewFragment
     }
@@ -81,6 +82,7 @@ class MatisseImageCropViewPagerAdapter(fm: FragmentManager?, var mContext: Conte
     init {
         mLayoutInflater = mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         this.imagePathList = imagePathList
+        this.imageUriList = imageUriList
         this.storedImageFileNameList = storedImageFileNameList
         this.storeFilePath = storeFilePath
         imageCropViewFragmentSparseArray = SparseArray()

@@ -24,6 +24,7 @@ import java.io.File
 class MatisseImageCropViewFragment : Fragment() {
 
     var imagePath: String? = null
+    var imageUri: String? = null
     var cropImageView: AppCompatImageView? = null
     var relativeProgressBar: View? = null
     var textViewCreateDate: TextView? = null
@@ -75,6 +76,9 @@ class MatisseImageCropViewFragment : Fragment() {
             if(imagePath == null){
                 imagePath = requireArguments().getString(MatisseImageCropActivity.PARAM_IMAGEPATH)
             }
+            if(imageUri == null){
+                imageUri = requireArguments().getString(MatisseImageCropActivity.PARAM_IMAGEURI)
+            }
             loadCropImage()
         }
 
@@ -82,8 +86,8 @@ class MatisseImageCropViewFragment : Fragment() {
 
 
     fun loadCropImage() {
-        var loadImageFilePath = imagePath
-        val file = File(imagePath)
+        var loadImageFilePath = imageUri
+        val file = File(imageUri)
         if (file.exists()) {
             loadImageFilePath = file.absolutePath
         }else{
@@ -163,6 +167,7 @@ class MatisseImageCropViewFragment : Fragment() {
     }
 
     fun changeCropImage(cropPath: String){
+        imageUri = cropPath
         imagePath = cropPath
         isCropImage = true
         loadCropImage()
@@ -171,10 +176,11 @@ class MatisseImageCropViewFragment : Fragment() {
 
 
     companion object {
-        fun newInstance(imagePath: String?): MatisseImageCropViewFragment {
+        fun newInstance(imagePath: String?, imageUri: String?): MatisseImageCropViewFragment {
             val fragment = MatisseImageCropViewFragment()
             val args = Bundle()
             args.putString(MatisseImageCropActivity.PARAM_IMAGEPATH, imagePath)
+            args.putString(MatisseImageCropActivity.PARAM_IMAGEURI, imageUri)
             fragment.arguments = args
             return fragment
         }
