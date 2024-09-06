@@ -1,5 +1,6 @@
 package com.zhihu.matisse.ui
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
@@ -14,10 +15,12 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener
@@ -53,7 +56,7 @@ class MatisseImageCropActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_imagecrop)
+        setContentView(R.layout.activity_matisse_imagecrop)
         onBindLayout()
         onBindData()
     }
@@ -68,36 +71,10 @@ class MatisseImageCropActivity : AppCompatActivity() {
         linearBottomButtonEdit!!.setOnClickListener(View.OnClickListener {
             imageCropStart()
         })
+        setToolbar()
+        setStatusbarTransparent(false)
+        setStatusBarAndNavigationBarColors()
 
-        setLightModeStatusBar()
-    }
-
-    private fun setLightModeStatusBar() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val decor = window.decorView
-            decor.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-        }
-    }
-
-    protected fun setToolbar() {
-        toolbar = findViewById<View>(R.id.toolbar) as Toolbar
-        if (toolbar == null) return
-        setSupportActionBar(toolbar)
-        val actionBar = supportActionBar
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true)
-            actionBar.setHomeButtonEnabled(true)
-            actionBar.setDisplayShowTitleEnabled(false)
-            val xBtn = ContextCompat.getDrawable(this, R.drawable.ic_x)
-
-            xBtn?.setTintList(
-                when {
-                    !isDarkMode(this) -> ColorStateList.valueOf(Color.BLACK)
-                    else -> ColorStateList.valueOf(Color.WHITE)
-                }
-            )
-            actionBar.setHomeAsUpIndicator(xBtn)
-        }
     }
 
     fun onBindData() {
@@ -124,7 +101,6 @@ class MatisseImageCropActivity : AppCompatActivity() {
         }
 
         setCurrentPage()
-        setToolbar()
         invalidateOptionsMenu()
     }
 
@@ -270,21 +246,6 @@ class MatisseImageCropActivity : AppCompatActivity() {
         }
     }
 
-    fun isDarkMode(context: Context, showLog: Boolean = false): Boolean {
-        val configuration = context.resources.configuration
-        val currentNightMode = configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
-        when (currentNightMode) {
-            Configuration.UI_MODE_NIGHT_NO -> {
-                if(showLog) Log.e("TAG", "UI_MODE_NIGHT_NO")
-            }
-            Configuration.UI_MODE_NIGHT_YES -> {
-                if(showLog) Log.e("TAG", "UI_MODE_NIGHT_YES")
-                return true
-            }
-        }
-        return false
-    }
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == UCrop.REQUEST_CROP && resultCode == RESULT_OK) {
@@ -302,6 +263,114 @@ class MatisseImageCropActivity : AppCompatActivity() {
         }else{
 
         }
+    }
+
+
+
+    fun setStatusbarTransparent(useStatusBarHeight: Boolean = true) {
+
+        if (useStatusBarHeight && findViewById<View?>(R.id.appBarLayout) != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            val appBarLayout = findViewById<AppBarLayout>(R.id.appBarLayout)
+            appBarLayout.setPadding(0, getStatusBarHeight(this), 0, 0)
+        }
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+        }
+        //make fully Android Transparent Status bar
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            setWindowFlag(this, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, false)
+            window.statusBarColor = ContextCompat.getColor(this, R.color.paletteTransparent)
+        }
+    }
+
+    fun setStatusBarAndNavigationBarColors() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            window.navigationBarColor = ContextCompat.getColor(this, R.color.paletteTransparent)
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) window.navigationBarDividerColor = ContextCompat.getColor(this, R.color.paletteTransparent)
+            window.statusBarColor = ContextCompat.getColor(this, R.color.paletteTransparent)
+        }
+        if (isDarkMode(this)) {
+            clearLightModeStatusBar()
+
+        } else {
+            setLightModeStatusBar()
+        }
+    }
+
+
+    fun getStatusBarHeight(context: Context): Int {
+        var result = context.resources.getDimension(R.dimen.appbar_padding_top).toInt()
+        val resourceId = context.resources.getIdentifier("status_bar_height", "dimen", "android")
+        if (resourceId > 0) result = context.resources.getDimensionPixelSize(resourceId)
+        return result
+    }
+
+    fun setWindowFlag(activity: Activity, bits: Int, on: Boolean) {
+        val win = activity.window
+        val winParams = win.attributes
+        if (on) {
+            winParams.flags = winParams.flags or bits
+        } else {
+            winParams.flags = winParams.flags and bits.inv()
+        }
+        win.attributes = winParams
+    }
+
+    private fun setLightModeStatusBar() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val decor = window.decorView
+            decor.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+        }
+    }
+
+    fun clearLightModeStatusBar(isChangeNavigation: Boolean = true) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val decor = window.decorView
+            window.statusBarColor = Color.BLACK
+            decor.systemUiVisibility = 0 // 시스템 UI 플래그 초기화 (Light Status Bar 해제)
+        }
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP) {
+            window.statusBarColor = Color.BLACK
+        }
+    }
+
+
+    protected fun setToolbar() {
+        toolbar = findViewById<View>(R.id.toolbar) as Toolbar
+        if (toolbar == null) return
+        setSupportActionBar(toolbar)
+        val actionBar = supportActionBar
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true)
+            actionBar.setHomeButtonEnabled(true)
+            actionBar.setDisplayShowTitleEnabled(false)
+            val xBtn = ContextCompat.getDrawable(this, R.drawable.ic_x)
+
+            xBtn?.setTintList(
+                when {
+                    !isDarkMode(this) -> ColorStateList.valueOf(Color.BLACK)
+                    else -> ColorStateList.valueOf(Color.WHITE)
+                }
+            )
+            actionBar.setHomeAsUpIndicator(xBtn)
+        }
+    }
+
+    fun isDarkMode(context: Context, showLog: Boolean = false): Boolean {
+        val configuration = context.resources.configuration
+        val currentNightMode = configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        when (currentNightMode) {
+            Configuration.UI_MODE_NIGHT_NO -> {
+                if(showLog) Log.e("TAG", "UI_MODE_NIGHT_NO")
+            }
+            Configuration.UI_MODE_NIGHT_YES -> {
+                if(showLog) Log.e("TAG", "UI_MODE_NIGHT_YES")
+                return true
+            }
+        }
+        return false
     }
 
 

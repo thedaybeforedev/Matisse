@@ -28,7 +28,7 @@
     <dimen name="image_background_picker_image_list_top_margin">16dp</dimen>
 
     <dimen name="image_crop_bottom_button_height">56dp</dimen>
-
+    <dimen name="appbar_padding_top">0dp</dimen>
 
     <dimen name="text_normal">18sp</dimen>
 </resources>

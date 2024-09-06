@@ -58,7 +58,7 @@ class MatisseImageCropViewFragment : Fragment() {
 
 
     private fun onContentLayoutId(): Int {
-        return R.layout.fragment_imagecropview
+        return R.layout.fragment_matisse_imagecropview
     }
 
     fun onBindLayout(rootView: View?) {

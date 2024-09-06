@@ -38,4 +38,6 @@
 
     <color name="paletteBlack">@color/paletteBlack100</color>
     <color name="paletteBlack100">#000000</color>
+
+    <color name="paletteTransparent">#00000000</color>
 </resources>
