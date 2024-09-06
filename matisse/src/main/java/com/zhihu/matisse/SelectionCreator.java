@@ -384,6 +384,7 @@ public final class SelectionCreator {
         }
 
         cropIntent.putExtra(MatisseImageCropActivity.PARAM_IMAGEPATH_ARRAY, fileNames);
+        cropIntent.putExtra(MatisseImageCropActivity.PARAM_IMAGEURI_ARRAY, fileNames);
         cropIntent.putExtra(MatisseImageCropActivity.PARAM_STORE_FILE_NAME_ARRAY, storedFileNames);
 
         launcher.launch(cropIntent);
