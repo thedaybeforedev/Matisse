@@ -509,6 +509,7 @@ public class MatisseActivity extends AppCompatActivity implements
                 //크롭 화면으로 이동
                 Intent cropIntent = new Intent(this, MatisseImageCropActivity.class);
                 String[] fileNames = new String[selectedPaths.size()];
+                String[] fileUrl = new String[selectedPaths.size()];
                 String[] storedFileNames = new String[selectedPaths.size()];
 
                 LocalDateTime now = LocalDateTime.now();
@@ -517,11 +518,13 @@ public class MatisseActivity extends AppCompatActivity implements
                         now.getHour(), now.getMinute(), now.getSecond());
 
                 for (int i = 0; i < fileNames.length; i++) {
-                    fileNames[i] = selectedUris.get(i).toString();
+                    fileNames[i] = selectedPaths.get(i);
+                    fileUrl[i] = selectedUris.get(i).toString();
                     storedFileNames[i] = String.format("%s_%d.%s", yyyymmddhhmmss, i, "jpg");
                 }
 
                 cropIntent.putExtra(MatisseImageCropActivity.PARAM_IMAGEPATH_ARRAY, fileNames);
+                cropIntent.putExtra(MatisseImageCropActivity.PARAM_IMAGEURI_ARRAY, fileUrl);
                 cropIntent.putExtra(MatisseImageCropActivity.PARAM_STORE_FILE_NAME_ARRAY, storedFileNames);
                 String storePath = new File(getCacheDir().toString() + "/images").getAbsolutePath();
                 File imageDir = new File(storePath);

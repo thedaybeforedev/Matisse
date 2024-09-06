@@ -46,6 +46,7 @@ class MatisseImageCropActivity : AppCompatActivity() {
 
 
     private var imagePathArrays: Array<String>? = null
+    private var imagePathUriArrays: Array<String>? = null
     private var storedImageFileNameArrays: Array<String>? = null
     private var storeFilePath: String? = null
 
@@ -81,6 +82,7 @@ class MatisseImageCropActivity : AppCompatActivity() {
         if (intent.extras != null) {
             val intent = intent
             imagePathArrays = intent.getStringArrayExtra(PARAM_IMAGEPATH_ARRAY)
+            imagePathUriArrays = intent.getStringArrayExtra(PARAM_IMAGEURI_ARRAY)
             storedImageFileNameArrays = intent.getStringArrayExtra(PARAM_STORE_FILE_NAME_ARRAY)
             if (imagePathArrays == null && intent.getStringExtra(PARAM_IMAGEPATH) != null) {
                 imagePathArrays = arrayOf(intent.getStringExtra(PARAM_IMAGEPATH)?:"")
@@ -88,11 +90,14 @@ class MatisseImageCropActivity : AppCompatActivity() {
             if (storedImageFileNameArrays == null && intent.getStringExtra(PARAM_STORE_FILE_NAME) != null) {
                 storedImageFileNameArrays = arrayOf(intent.getStringExtra(PARAM_STORE_FILE_NAME)?:"")
             }
+            if (imagePathUriArrays == null && intent.getStringExtra(PARAM_IMAGEURI) != null) {
+                imagePathUriArrays = arrayOf(intent.getStringExtra(PARAM_IMAGEURI)?:"")
+            }
 
             currentPage = intent.getIntExtra(BUNDLE_POSITION, 0)
             storeFilePath = intent.getStringExtra(PARAM_STORE_FILE_PATH)
 
-            imageCropViewPagerAdapter = MatisseImageCropViewPagerAdapter(supportFragmentManager, this, imagePathArrays?.toMutableList(), storedImageFileNameArrays?.toMutableList() ,storeFilePath)
+            imageCropViewPagerAdapter = MatisseImageCropViewPagerAdapter(supportFragmentManager, this, imagePathUriArrays?.toMutableList(), storedImageFileNameArrays?.toMutableList() ,storeFilePath)
             viewPagerImageCrop!!.adapter = imageCropViewPagerAdapter
             viewPagerImageCrop!!.addOnPageChangeListener(viewPagerOnPageChangeListener)
             if (currentPage > 0) {
@@ -378,8 +383,10 @@ class MatisseImageCropActivity : AppCompatActivity() {
 
     companion object {
         const val PARAM_IMAGEPATH = "imagePath"
+        const val PARAM_IMAGEURI = "imageUri"
         const val PARAM_STORE_FILE_NAME = "storeFileName"
         const val PARAM_IMAGEPATH_ARRAY = "imagePathArray"
+        const val PARAM_IMAGEURI_ARRAY = "imageUriArray"
         const val PARAM_STORE_FILE_NAME_ARRAY = "storeFileNameArray"
         const val PARAM_STORE_FILE_PATH = "storeFilePath"
         const val BUNDLE_POSITION = "position"
