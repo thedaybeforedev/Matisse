@@ -512,19 +512,26 @@ public class MatisseActivity extends AppCompatActivity implements
                 String[] storedFileNames = new String[selectedPaths.size()];
 
                 LocalDateTime now = LocalDateTime.now();
-                String hhmmss = String.format("%02d%02d%02d", now.getHour(), now.getMinute(), now.getSecond());
+                String yyyymmddhhmmss = String.format("%04d%02d%02d%02d%02d%02d",
+                        now.getYear(), now.getMonthValue(), now.getDayOfMonth(),
+                        now.getHour(), now.getMinute(), now.getSecond());
 
                 for (int i = 0; i < fileNames.length; i++) {
-                    fileNames[i] = selectedPaths.get(i);
-                    storedFileNames[i] = String.format("%s_%d.%s", hhmmss, i, "jpg");
+                    fileNames[i] = selectedUris.get(i).toString();
+                    storedFileNames[i] = String.format("%s_%d.%s", yyyymmddhhmmss, i, "jpg");
                 }
 
                 cropIntent.putExtra(MatisseImageCropActivity.PARAM_IMAGEPATH_ARRAY, fileNames);
                 cropIntent.putExtra(MatisseImageCropActivity.PARAM_STORE_FILE_NAME_ARRAY, storedFileNames);
                 String storePath = new File(getCacheDir().toString() + "/images").getAbsolutePath();
+                File imageDir = new File(storePath);
+                if (!imageDir.exists()) {
+                    // 디렉토리가 존재하지 않으면 생성
+                    imageDir.mkdirs();  // 상위 폴더가 없는 경우도 대비해 전체 폴더 경로를 생성합니다.
+                }
                 cropIntent.putExtra(MatisseImageCropActivity.PARAM_STORE_FILE_PATH, storePath);
                 activityResultLauncher.launch(cropIntent);
-
+                mSpec.isUseCrop = false;
             }else {
                 setResult(RESULT_OK, result);
                 finish();

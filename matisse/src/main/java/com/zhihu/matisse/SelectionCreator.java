@@ -375,10 +375,12 @@ public final class SelectionCreator {
         String[] storedFileNames = new String[imageList.length];
 
         LocalDateTime now = LocalDateTime.now();
-        String hhmmss = String.format("%02d%02d%02d", now.getHour(), now.getMinute(), now.getSecond());
+        String yyyymmddhhmmss = String.format("%04d%02d%02d%02d%02d%02d",
+                now.getYear(), now.getMonthValue(), now.getDayOfMonth(),
+                now.getHour(), now.getMinute(), now.getSecond());
 
         for (int i = 0; i < fileNames.length; i++) {
-            storedFileNames[i] = String.format("%s_%d.%s", hhmmss, i, "jpg");
+            storedFileNames[i] = String.format("%s_%d.%s", yyyymmddhhmmss, i, "jpg");
         }
 
         cropIntent.putExtra(MatisseImageCropActivity.PARAM_IMAGEPATH_ARRAY, fileNames);
