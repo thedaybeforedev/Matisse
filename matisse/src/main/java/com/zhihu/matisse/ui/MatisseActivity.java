@@ -527,11 +527,7 @@ public class MatisseActivity extends AppCompatActivity implements
                 cropIntent.putExtra(MatisseImageCropActivity.PARAM_IMAGEURI_ARRAY, fileUrl);
                 cropIntent.putExtra(MatisseImageCropActivity.PARAM_STORE_FILE_NAME_ARRAY, storedFileNames);
                 String storePath = new File(getCacheDir().toString() + "/images").getAbsolutePath();
-                File imageDir = new File(storePath);
-                if (!imageDir.exists()) {
-                    // 디렉토리가 존재하지 않으면 생성
-                    imageDir.mkdirs();  // 상위 폴더가 없는 경우도 대비해 전체 폴더 경로를 생성합니다.
-                }
+
                 cropIntent.putExtra(MatisseImageCropActivity.PARAM_STORE_FILE_PATH, storePath);
                 activityResultLauncher.launch(cropIntent);
                 mSpec.isUseCrop = false;

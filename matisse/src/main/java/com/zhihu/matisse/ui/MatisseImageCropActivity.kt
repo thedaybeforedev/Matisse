@@ -20,7 +20,6 @@ import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener
@@ -103,6 +102,13 @@ class MatisseImageCropActivity : AppCompatActivity() {
             if (currentPage > 0) {
                 viewPagerImageCrop!!.setCurrentItem(currentPage, false)
             }
+        }
+
+        val storePath = storeFilePath ?: File("$cacheDir/images").absolutePath
+        val imageDir = File(storePath)
+        if (!imageDir.exists()) {
+            // 디렉토리가 존재하지 않으면 생성
+            imageDir.mkdirs() // 상위 폴더가 없는 경우도 대비해 전체 폴더 경로를 생성합니다.
         }
 
         setCurrentPage()
