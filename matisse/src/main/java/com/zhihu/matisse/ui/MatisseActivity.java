@@ -311,6 +311,7 @@ public class MatisseActivity extends AppCompatActivity implements
         mAlbumCollection.onDestroy();
         mSpec.onCheckedListener = null;
         mSpec.onSelectedListener = null;
+        mSpec.isUseCrop = false;
     }
 
     @Override
@@ -531,7 +532,6 @@ public class MatisseActivity extends AppCompatActivity implements
 
                 cropIntent.putExtra(MatisseImageCropActivity.PARAM_STORE_FILE_PATH, storePath);
                 activityResultLauncher.launch(cropIntent);
-                mSpec.isUseCrop = false;
             }else {
                 setResult(RESULT_OK, result);
                 finish();
