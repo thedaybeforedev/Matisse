@@ -134,7 +134,7 @@ public class MatisseActivity extends AppCompatActivity implements
                         if (data != null) {
                             // 예: 데이터를 처리하는 로직
                             String[] croppedImageUri = data.getStringArrayExtra(MatisseImageCropActivity.PARAM_IMAGEPATH_ARRAY);
-
+                            Boolean isCroppedImageAvailable = data.getBooleanExtra(MatisseImageCropActivity.PARAM_IMAGE_EDITED, false);
                             Intent intent = new Intent();
                             ArrayList<Uri> selectedUris = new ArrayList<>();
                             for (String s : croppedImageUri) {
@@ -145,6 +145,7 @@ public class MatisseActivity extends AppCompatActivity implements
                             intent.putParcelableArrayListExtra(EXTRA_RESULT_SELECTION, selectedUris);
                             intent.putStringArrayListExtra(EXTRA_RESULT_SELECTION_PATH, selectedImagePath);
                             intent.putExtra(EXTRA_RESULT_ORIGINAL_ENABLE, mOriginalEnable);
+                            intent.putExtra(MatisseImageCropActivity.PARAM_IMAGE_EDITED, isCroppedImageAvailable);
                             setResult(RESULT_OK, intent);
                             finish();
                         }

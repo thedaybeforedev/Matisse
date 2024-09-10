@@ -53,6 +53,9 @@ class MatisseImageCropActivity : AppCompatActivity() {
     private var toolbar: Toolbar? = null
     private var currentPage = 0
 
+    var isCroppedImageAvailable = false
+        private set
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -217,6 +220,7 @@ class MatisseImageCropActivity : AppCompatActivity() {
 
             val resultValue = Intent()
             resultValue.putExtra(PARAM_IMAGEPATH_ARRAY, saveImage)
+            resultValue.putExtra(PARAM_IMAGE_EDITED, isCroppedImageAvailable)
             setResult(RESULT_OK, resultValue)
             finish()
             hideProgressLoading()
@@ -268,6 +272,7 @@ class MatisseImageCropActivity : AppCompatActivity() {
                 imageCropViewPagerAdapter!!.cropChangImage(currentPage, it)
             }
 
+            isCroppedImageAvailable = true
 
         } else if (resultCode == UCrop.RESULT_ERROR) {
             val cropError = UCrop.getError(data!!)
@@ -396,6 +401,7 @@ class MatisseImageCropActivity : AppCompatActivity() {
         const val PARAM_IMAGEURI_ARRAY = "imageUriArray"
         const val PARAM_STORE_FILE_NAME_ARRAY = "storeFileNameArray"
         const val PARAM_STORE_FILE_PATH = "storeFilePath"
+        const val PARAM_IMAGE_EDITED = "imageEdited"
         const val BUNDLE_POSITION = "position"
 
         private fun setMenuTextColor(context: Context, toolbar: Toolbar?, title: String, menuResId: Int, colorRes: Int) {
