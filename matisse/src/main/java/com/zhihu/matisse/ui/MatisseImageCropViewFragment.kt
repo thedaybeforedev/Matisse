@@ -88,9 +88,15 @@ class MatisseImageCropViewFragment : Fragment() {
 
 
     fun loadCropImage() {
-        val file: File
+        var file: File
         var loadImageFilePath = imageUri
-        if (!isCheckUri){
+        if (!isCheckUri) {
+            file = File(imageUri)
+            if (file.exists()) {
+                loadImageFilePath = file.absolutePath
+            }
+        }
+        if(isCheckUri && isCropImage){
             file = File(imageUri)
             if (file.exists()) {
                 loadImageFilePath = file.absolutePath
@@ -103,6 +109,8 @@ class MatisseImageCropViewFragment : Fragment() {
         if (!TextUtils.isEmpty(loadImageFilePath))
             Glide.with(this)
             .load(if(!isCheckUri){
+                loadImageFilePath
+            }else if(isCheckUri && isCropImage){
                 loadImageFilePath
             }else{
                 Uri.parse(imageUri)

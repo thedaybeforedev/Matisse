@@ -389,6 +389,7 @@ public final class SelectionCreator {
         cropIntent.putExtra(MatisseImageCropActivity.PARAM_STORE_FILE_NAME_ARRAY, storedFileNames);
 
         launcher.launch(cropIntent);
+        mSelectionSpec.isTypeUri = false;
     }
 
     public SelectionCreator setUseCrop(boolean isUseCrop){
