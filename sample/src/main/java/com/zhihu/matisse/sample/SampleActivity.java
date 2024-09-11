@@ -147,20 +147,22 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
                 break;
             case R.id.dracula:
 
-                String[] fileListArray = new String[3];
+                String[] fileListArray = new String[1];
 
                 for (int i = 0; i < fileListArray.length; i++) {
                     if(i == 0){
-                        fileListArray[0] = "/data/user/0/com.zhihu.matisse.sample/cache/images/ddayId_storyDateId_110811_0.jpg";
-                    }else if(i == 1){
-                        fileListArray[1] = "/data/user/0/com.zhihu.matisse.sample/cache/images/ddayId_storyDateId_110811_1.jpg";
-                    }else if(i == 2){
-                        fileListArray[2] = "/data/user/0/com.zhihu.matisse.sample/cache/images/ddayId_storyDateId_110811_2.jpg";
+                        fileListArray[0] = "https://firebasestorage.googleapis.com/v0/b/project-2545831719973302142/o/resources%2Fbackgrounds%2Fall%2Fai%2Fbg_ai_007.jpg?alt=media&token=faf0e32b-834c-4a63-b533-ff6c6127a2f9";
                     }
+//                    else if(i == 1){
+//                        fileListArray[1] = "/data/user/0/com.zhihu.matisse.sample/cache/images/ddayId_storyDateId_110811_1.jpg";
+//                    }else if(i == 2){
+//                        fileListArray[2] = "/data/user/0/com.zhihu.matisse.sample/cache/images/ddayId_storyDateId_110811_2.jpg";
+//                    }
                 }
                 //크롭만 사용할때 예시
                 Matisse.from(SampleActivity.this)
                         .choose(MimeType.ofImage())
+                        .setTypeUri(true)
                         .forCropResult(fileListArray, activityResultLauncher);
                 break;
             case R.id.only_gif:

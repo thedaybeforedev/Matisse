@@ -3,6 +3,7 @@ package com.zhihu.matisse.ui
 import android.app.Activity
 import android.content.Intent
 import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.LayoutInflater
@@ -30,7 +31,7 @@ class MatisseImageCropViewFragment : Fragment() {
     var textViewCreateDate: TextView? = null
 
     var isCropImage: Boolean = false
-
+    private var isCheckUri: Boolean = false
 
     override fun onStop() {
         super.onStop()
@@ -79,6 +80,7 @@ class MatisseImageCropViewFragment : Fragment() {
             if(imageUri == null){
                 imageUri = requireArguments().getString(MatisseImageCropActivity.PARAM_IMAGEURI)
             }
+            isCheckUri = requireArguments().getBoolean(MatisseImageCropActivity.PARAM_TYPE_URI, false)
             loadCropImage()
         }
 
@@ -86,21 +88,25 @@ class MatisseImageCropViewFragment : Fragment() {
 
 
     fun loadCropImage() {
+        val file: File
         var loadImageFilePath = imageUri
-        val file = File(imageUri)
-        if (file.exists()) {
-            loadImageFilePath = file.absolutePath
-        }else{
-
+        if (!isCheckUri){
+            file = File(imageUri)
+            if (file.exists()) {
+                loadImageFilePath = file.absolutePath
+            }
         }
-
 
         //cropImageView!!.setImageUriAsync(Uri.fromFile(file)) // 크롭할 이미지 URI 설정
 
 
         if (!TextUtils.isEmpty(loadImageFilePath))
             Glide.with(this)
-            .load(loadImageFilePath)
+            .load(if(!isCheckUri){
+                loadImageFilePath
+            }else{
+                Uri.parse(imageUri)
+            })
             .apply(RequestOptions().signature(ObjectKey(File(loadImageFilePath).lastModified())))
             .listener(object : RequestListener<Drawable?> {
 
@@ -176,11 +182,12 @@ class MatisseImageCropViewFragment : Fragment() {
 
 
     companion object {
-        fun newInstance(imagePath: String?, imageUri: String?): MatisseImageCropViewFragment {
+        fun newInstance(imagePath: String?, imageUri: String?, isTypeUri: Boolean): MatisseImageCropViewFragment {
             val fragment = MatisseImageCropViewFragment()
             val args = Bundle()
             args.putString(MatisseImageCropActivity.PARAM_IMAGEPATH, imagePath)
             args.putString(MatisseImageCropActivity.PARAM_IMAGEURI, imageUri)
+            args.putBoolean(MatisseImageCropActivity.PARAM_TYPE_URI, isTypeUri)
             fragment.arguments = args
             return fragment
         }

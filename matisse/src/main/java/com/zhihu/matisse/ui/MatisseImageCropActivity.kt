@@ -101,7 +101,7 @@ class MatisseImageCropActivity : AppCompatActivity() {
             currentPage = intent.getIntExtra(BUNDLE_POSITION, 0)
             storeFilePath = intent.getStringExtra(PARAM_STORE_FILE_PATH)
             isCheckUri = intent.getBooleanExtra(PARAM_TYPE_URI, false)
-            imageCropViewPagerAdapter = MatisseImageCropViewPagerAdapter(supportFragmentManager, this, imagePathArrays?.toMutableList(), imagePathUriArrays?.toMutableList(), storedImageFileNameArrays?.toMutableList() ,storeFilePath)
+            imageCropViewPagerAdapter = MatisseImageCropViewPagerAdapter(supportFragmentManager, this, imagePathArrays?.toMutableList(), imagePathUriArrays?.toMutableList(), storedImageFileNameArrays?.toMutableList() ,storeFilePath, isCheckUri)
             viewPagerImageCrop!!.adapter = imageCropViewPagerAdapter
             viewPagerImageCrop!!.addOnPageChangeListener(viewPagerOnPageChangeListener)
             if (currentPage > 0) {
