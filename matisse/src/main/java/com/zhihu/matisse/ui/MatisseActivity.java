@@ -312,6 +312,7 @@ public class MatisseActivity extends AppCompatActivity implements
         mSpec.onCheckedListener = null;
         mSpec.onSelectedListener = null;
         mSpec.isUseCrop = false;
+        mSpec.isTypeUri = false;
     }
 
     @Override
@@ -527,6 +528,7 @@ public class MatisseActivity extends AppCompatActivity implements
 
                 cropIntent.putExtra(MatisseImageCropActivity.PARAM_IMAGEPATH_ARRAY, fileNames);
                 cropIntent.putExtra(MatisseImageCropActivity.PARAM_IMAGEURI_ARRAY, fileUrl);
+                cropIntent.putExtra(MatisseImageCropActivity.PARAM_TYPE_URI, mSpec.isTypeUri);
                 cropIntent.putExtra(MatisseImageCropActivity.PARAM_STORE_FILE_NAME_ARRAY, storedFileNames);
                 String storePath = new File(getCacheDir().toString() + "/images").getAbsolutePath();
 

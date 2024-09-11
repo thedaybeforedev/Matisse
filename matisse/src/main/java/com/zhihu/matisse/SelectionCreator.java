@@ -385,6 +385,7 @@ public final class SelectionCreator {
 
         cropIntent.putExtra(MatisseImageCropActivity.PARAM_IMAGEPATH_ARRAY, fileNames);
         cropIntent.putExtra(MatisseImageCropActivity.PARAM_IMAGEURI_ARRAY, fileNames);
+        cropIntent.putExtra(MatisseImageCropActivity.PARAM_TYPE_URI, mSelectionSpec.isTypeUri);
         cropIntent.putExtra(MatisseImageCropActivity.PARAM_STORE_FILE_NAME_ARRAY, storedFileNames);
 
         launcher.launch(cropIntent);
@@ -392,6 +393,11 @@ public final class SelectionCreator {
 
     public SelectionCreator setUseCrop(boolean isUseCrop){
         mSelectionSpec.isUseCrop = isUseCrop;
+        return this;
+    }
+
+    public SelectionCreator setTypeUri(boolean isTypeUri){
+        mSelectionSpec.isTypeUri = isTypeUri;
         return this;
     }
 

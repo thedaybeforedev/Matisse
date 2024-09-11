@@ -58,6 +58,7 @@ public final class SelectionSpec {
     public OnCheckedListener onCheckedListener;
     public boolean showPreview;
     public boolean isUseCrop = false;  //이미지 선택 후 크롭 사용 여부
+    public boolean isTypeUri = false; //이미지가 uri인지 체크 (uri일때는 사진리스트를 1개만 보내야함 추후 여러장 가능하게 필요할까?)
 
     private SelectionSpec() {
     }

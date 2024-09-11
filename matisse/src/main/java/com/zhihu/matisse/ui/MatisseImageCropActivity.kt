@@ -49,6 +49,8 @@ class MatisseImageCropActivity : AppCompatActivity() {
     private var storedImageFileNameArrays: Array<String>? = null
     private var storeFilePath: String? = null
 
+    private var isCheckUri: Boolean = false
+
     var linearBottomButtonEdit: LinearLayout? = null
     private var toolbar: Toolbar? = null
     private var currentPage = 0
@@ -98,7 +100,7 @@ class MatisseImageCropActivity : AppCompatActivity() {
 
             currentPage = intent.getIntExtra(BUNDLE_POSITION, 0)
             storeFilePath = intent.getStringExtra(PARAM_STORE_FILE_PATH)
-
+            isCheckUri = intent.getBooleanExtra(PARAM_TYPE_URI, false)
             imageCropViewPagerAdapter = MatisseImageCropViewPagerAdapter(supportFragmentManager, this, imagePathArrays?.toMutableList(), imagePathUriArrays?.toMutableList(), storedImageFileNameArrays?.toMutableList() ,storeFilePath)
             viewPagerImageCrop!!.adapter = imageCropViewPagerAdapter
             viewPagerImageCrop!!.addOnPageChangeListener(viewPagerOnPageChangeListener)
@@ -174,9 +176,14 @@ class MatisseImageCropActivity : AppCompatActivity() {
         val imagePath = imagePathArrays?.get(currentPage)
 
         if (imagePath != null && imagePath.isNotEmpty()) {
-
-            val file = File(imagePath)
-            val uri = Uri.fromFile(file)
+            val file: File
+            val uri: Uri
+            if (!isCheckUri){
+                file = File(imagePath)
+                uri = Uri.fromFile(file)
+            }else{
+                uri = Uri.parse(imagePath)
+            }
             val outputUri = Uri.fromFile(File("${cacheDir}/images",
                 storedImageFileNameArrays?.get(currentPage) ?: storedImageFileNameArrays?.get(0)
             ))
@@ -402,6 +409,7 @@ class MatisseImageCropActivity : AppCompatActivity() {
         const val PARAM_STORE_FILE_NAME_ARRAY = "storeFileNameArray"
         const val PARAM_STORE_FILE_PATH = "storeFilePath"
         const val PARAM_IMAGE_EDITED = "imageEdited"
+        const val PARAM_TYPE_URI = "isUriType"
         const val BUNDLE_POSITION = "position"
 
         private fun setMenuTextColor(context: Context, toolbar: Toolbar?, title: String, menuResId: Int, colorRes: Int) {
