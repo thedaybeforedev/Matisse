@@ -146,12 +146,12 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
 
                 for (int i = 0; i < fileListArray.length; i++) {
                     if(i == 0){
-                        fileListArray[0] = "/data/user/0/com.zhihu.matisse.sample/cache/images/20240906155936_0.jpg";
+                        fileListArray[0] = "/data/user/0/com.zhihu.matisse.sample/cache/images/20240906164522_0.jpg";
                     }
                     else if(i == 1){
-                        fileListArray[1] = "/data/user/0/com.zhihu.matisse.sample/cache/images/20240906155936_1.jpg";
+                        fileListArray[1] = "/data/user/0/com.zhihu.matisse.sample/cache/images/20240906164522_1.jpg";
                     }else if(i == 2){
-                        fileListArray[2] = "/data/user/0/com.zhihu.matisse.sample/cache/images/20240906155936_2.jpg";
+                        fileListArray[2] = "/data/user/0/com.zhihu.matisse.sample/cache/images/20240906164522_2.jpg";
                     }
                 }
                 //크롭만 사용할때 예시
