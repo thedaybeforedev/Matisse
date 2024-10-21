@@ -3,9 +3,6 @@ package com.zhihu.matisse.internal.utils;
 import android.content.Context;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
-import android.os.Build;
-
-import com.zhihu.matisse.BuildConfig;
 
 /**
  * @author 工藤

@@ -19,6 +19,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
@@ -29,30 +30,32 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.tbruyelle.rxpermissions2.RxPermissions;
 import com.zhihu.matisse.Matisse;
 import com.zhihu.matisse.MimeType;
+import com.zhihu.matisse.data.AspectRatios;
 import com.zhihu.matisse.engine.impl.GlideEngine;
 import com.zhihu.matisse.filter.Filter;
 import com.zhihu.matisse.internal.entity.CaptureStrategy;
 import com.zhihu.matisse.ui.MatisseImageCropActivity;
-
 import java.util.Arrays;
 import java.util.List;
 
 public class SampleActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final int REQUEST_CODE_CHOOSE = 23;
+    private static final int PERMISSION_REQUEST_CODE = 100;
 
+    private View clickView;
     private UriAdapter mAdapter;
 
     private ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
@@ -101,22 +104,12 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
         recyclerView.setAdapter(mAdapter = new UriAdapter());
     }
 
-    // <editor-fold defaultstate="collapsed" desc="onClick">
     @SuppressLint("CheckResult")
     @Override
     public void onClick(final View v) {
-        RxPermissions rxPermissions = new RxPermissions(this);
-        rxPermissions.request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .subscribe(aBoolean -> {
-                    if (aBoolean) {
-                        startAction(v);
-                    } else {
-                        Toast.makeText(SampleActivity.this, R.string.permission_request_denied, Toast.LENGTH_LONG)
-                                .show();
-                    }
-                }, Throwable::printStackTrace);
+        clickView = v;
+        checkStoragePermission();
     }
-    // </editor-fold>
 
     private void startAction(View v) {
         switch (v.getId()) {
@@ -144,6 +137,7 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
                             Log.e("isChecked", "onCheck: isChecked=" + isChecked);
                         })
                         .setUseCrop(true)
+                        .setCropRatio(AspectRatios.INSTANCE.getRatioFree())
                         .forResult(REQUEST_CODE_CHOOSE);
                 break;
             case R.id.dracula:
@@ -192,6 +186,51 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
             mAdapter.setData(Matisse.obtainResult(data), Matisse.obtainPathResult(data));
         }
     }
+
+    private void checkStoragePermission() {
+        // 권한이 이미 허용되었는지 확인
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // 권한이 거부되었을 때 요청
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                // 사용자가 이전에 권한 요청을 거부했을 경우 설명을 추가적으로 보여줄 수 있습니다.
+                Toast.makeText(this, "Storage permission is required to save files.", Toast.LENGTH_LONG).show();
+            }
+
+            // 권한 요청
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    PERMISSION_REQUEST_CODE);
+        } else {
+            // 권한이 이미 허용된 경우
+            proceedWithStorageAccess();
+        }
+    }
+
+    // 권한 요청 결과 처리
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // 권한이 허용된 경우
+                proceedWithStorageAccess();
+            } else {
+                // 권한이 거부된 경우
+                Toast.makeText(this, "Storage permission denied", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    // 권한이 허용되었을 때 파일 저장 작업 수행
+    private void proceedWithStorageAccess() {
+        // 파일을 저장하는 작업 등 수행
+        startAction(clickView);
+        Toast.makeText(this, "Storage access granted", Toast.LENGTH_SHORT).show();
+    }
+
 
     private static class UriAdapter extends RecyclerView.Adapter<UriAdapter.UriViewHolder> {
 

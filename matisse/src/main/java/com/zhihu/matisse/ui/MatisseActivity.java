@@ -19,6 +19,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.graphics.PorterDuff;
@@ -32,6 +33,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -82,7 +84,9 @@ import java.io.File;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Main Activity to display albums and media content (images/videos) in each album
@@ -191,6 +195,8 @@ public class MatisseActivity extends AppCompatActivity implements
         int color = ta.getColor(0, 0);
         ta.recycle();
         navigationIcon.setColorFilter(color, PorterDuff.Mode.SRC_IN);
+
+        setStatusBarIconsAndTextColor();
 
         mButtonPreview = (TextView) findViewById(R.id.button_preview);
         mButtonApply = (TextView) findViewById(R.id.button_apply);
@@ -515,20 +521,25 @@ public class MatisseActivity extends AppCompatActivity implements
                 String[] fileUrl = new String[selectedPaths.size()];
                 String[] storedFileNames = new String[selectedPaths.size()];
 
-                LocalDateTime now = LocalDateTime.now();
-                String yyyymmddhhmmss = String.format("%04d%02d%02d%02d%02d%02d",
-                        now.getYear(), now.getMonthValue(), now.getDayOfMonth(),
-                        now.getHour(), now.getMinute(), now.getSecond());
+                Calendar calendar = Calendar.getInstance();
+                String yyyymmddhhmmss = String.format(Locale.getDefault(), "%04d%02d%02d%02d%02d%02d",
+                        calendar.get(Calendar.YEAR),
+                        calendar.get(Calendar.MONTH) + 1, // MONTH는 0부터 시작하므로 +1
+                        calendar.get(Calendar.DAY_OF_MONTH),
+                        calendar.get(Calendar.HOUR_OF_DAY),
+                        calendar.get(Calendar.MINUTE),
+                        calendar.get(Calendar.SECOND));
 
                 for (int i = 0; i < fileNames.length; i++) {
                     fileNames[i] = selectedPaths.get(i);
                     fileUrl[i] = selectedUris.get(i).toString();
-                    storedFileNames[i] = String.format("%s_%d.%s", yyyymmddhhmmss, i, "jpg");
+                    storedFileNames[i] = String.format(Locale.getDefault(), "%s_%d.%s", yyyymmddhhmmss, i, "jpg");
                 }
 
                 cropIntent.putExtra(MatisseImageCropActivity.PARAM_IMAGEPATH_ARRAY, fileNames);
                 cropIntent.putExtra(MatisseImageCropActivity.PARAM_IMAGEURI_ARRAY, fileUrl);
                 cropIntent.putExtra(MatisseImageCropActivity.PARAM_TYPE_URI, mSpec.isTypeUri);
+                cropIntent.putExtra(MatisseImageCropActivity.PARAM_CROP_RATIO, mSpec.cropRatio);
                 cropIntent.putExtra(MatisseImageCropActivity.PARAM_STORE_FILE_NAME_ARRAY, storedFileNames);
                 String storePath = new File(getCacheDir().toString() + "/images").getAbsolutePath();
 
@@ -593,6 +604,31 @@ public class MatisseActivity extends AppCompatActivity implements
                 onAlbumSelected(album);
             }
         });
+    }
+
+    private void setStatusBarIconsAndTextColor() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Window window = getWindow();
+            View decorView = window.getDecorView();
+
+            // 다크 모드 체크
+            if (isDarkModeEnabled()) {
+                decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE); // 기본 상태
+            } else {
+                decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR); // 밝은 아이콘
+            }
+        } else {
+            // API 레벨 23 미만인 경우 기본 설정
+            Window window = getWindow();
+            View decorView = window.getDecorView();
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE); // 기본 상태
+        }
+    }
+
+    // 다크 모드가 활성화되어 있는지 확인하는 메서드
+    private boolean isDarkModeEnabled() {
+        int nightModeFlags = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        return nightModeFlags == Configuration.UI_MODE_NIGHT_YES;
     }
 
     @Override

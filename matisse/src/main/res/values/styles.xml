@@ -95,6 +95,41 @@
         <item name="android:popupBackground">@color/dracula_album_popup_bg</item>
     </style>
 
+
+
+    //===================================== Theme Custom ==========================================
+    <style name="MatisseDefault" parent="Matisse.Zhihu">
+
+        <item name="colorPrimary">@color/colorBackgroundPrimary</item>
+        <item name="colorPrimaryDark">@color/colorBackgroundPrimary</item>
+        <item name="toolbar">@style/DefaultToolbar</item>
+        <item name="album.dropdown.title.color">@color/textPrimary</item>
+        <item name="album.dropdown.count.color">@color/textPrimary</item>
+        <item name="album.element.color">@color/colorTextPrimary</item>
+        <item name="album.thumbnail.placeholder">@color/zhihu_album_dropdown_thumbnail_placeholder
+        </item>
+        <item name="album.emptyView">@drawable/ic_empty_zhihu</item>
+        <item name="album.emptyView.textColor">@color/zhihu_album_empty_view</item>
+        <item name="item.placeholder">@color/zhihu_item_placeholder</item>
+        <item name="item.checkCircle.backgroundColor">@color/colorTextPrimary</item>
+        <item name="item.checkCircle.borderColor">@color/zhihu_item_checkCircle_borderColor</item>
+        <item name="page.bg">@color/zhihu_page_bg</item>
+        <item name="bottomToolbar.bg">@color/colorBackgroundPrimary</item>
+        <item name="bottomToolbar.preview.textColor">@color/zhihu_bottom_toolbar_preview</item>
+        <item name="bottomToolbar.apply.textColor">@color/zhihu_bottom_toolbar_apply</item>
+        <item name="preview.bottomToolbar.back.textColor">
+            @color/zhihu_preview_bottom_toolbar_back_text
+        </item>
+        <item name="preview.bottomToolbar.apply.textColor">@color/paletteBlack</item>
+        <item name="listPopupWindowStyle">@style/DefaultListPopUpWindow</item>
+        <item name="capture.textColor">@color/zhihu_capture</item>
+    </style>
+    <style name="DefaultToolbar" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>
+
+    <style name="DefaultListPopUpWindow" parent="Widget.AppCompat.Light.ListPopupWindow">
+        <item name="android:popupBackground">@color/colorBackgroundPrimary</item>
+    </style>
+
     <style name="CropButton">
         <item name="android:textSize">@dimen/text_normal</item>
         <item name="android:gravity">center</item>

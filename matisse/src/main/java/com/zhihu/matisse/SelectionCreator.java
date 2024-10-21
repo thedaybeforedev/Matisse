@@ -28,6 +28,7 @@ import androidx.annotation.RequiresApi;
 import androidx.annotation.StyleRes;
 import androidx.fragment.app.Fragment;
 
+import com.zhihu.matisse.data.AspectRatios;
 import com.zhihu.matisse.engine.ImageEngine;
 import com.zhihu.matisse.filter.Filter;
 import com.zhihu.matisse.internal.entity.CaptureStrategy;
@@ -43,6 +44,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_BEHIND;
@@ -374,13 +378,17 @@ public final class SelectionCreator {
         String[] fileNames = imageList;
         String[] storedFileNames = new String[imageList.length];
 
-        LocalDateTime now = LocalDateTime.now();
-        String yyyymmddhhmmss = String.format("%04d%02d%02d%02d%02d%02d",
-                now.getYear(), now.getMonthValue(), now.getDayOfMonth(),
-                now.getHour(), now.getMinute(), now.getSecond());
+        Calendar calendar = Calendar.getInstance();
+        String yyyymmddhhmmss = String.format(Locale.getDefault(), "%04d%02d%02d%02d%02d%02d",
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH) + 1, // MONTH는 0부터 시작하므로 +1
+                calendar.get(Calendar.DAY_OF_MONTH),
+                calendar.get(Calendar.HOUR_OF_DAY),
+                calendar.get(Calendar.MINUTE),
+                calendar.get(Calendar.SECOND));
 
         for (int i = 0; i < fileNames.length; i++) {
-            storedFileNames[i] = String.format("%s_%d.%s", yyyymmddhhmmss, i, "jpg");
+            storedFileNames[i] = String.format(Locale.getDefault(), "%s_%d.%s", yyyymmddhhmmss, i, "jpg");
         }
 
         cropIntent.putExtra(MatisseImageCropActivity.PARAM_IMAGEPATH_ARRAY, fileNames);
@@ -399,6 +407,12 @@ public final class SelectionCreator {
 
     public SelectionCreator setTypeUri(boolean isTypeUri){
         mSelectionSpec.isTypeUri = isTypeUri;
+        return this;
+    }
+
+    public SelectionCreator setCropRatio(ArrayList<Float> ratio){
+        if(ratio == null) mSelectionSpec.cropRatio = AspectRatios.INSTANCE.getRatioFree();
+        else mSelectionSpec.cropRatio = ratio;
         return this;
     }
 

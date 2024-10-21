@@ -27,6 +27,7 @@ import com.google.android.material.appbar.AppBarLayout
 import com.yalantis.ucrop.UCrop
 import com.zhihu.matisse.R
 import com.zhihu.matisse.adapter.MatisseImageCropViewPagerAdapter
+import com.zhihu.matisse.data.AspectRatios
 import com.zhihu.matisse.viewpager.MatisseSwipeControlViewpager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -54,6 +55,8 @@ class MatisseImageCropActivity : AppCompatActivity() {
     var linearBottomButtonEdit: LinearLayout? = null
     private var toolbar: Toolbar? = null
     private var currentPage = 0
+
+    private var useCropRatio = AspectRatios.ratioFree
 
     var isCroppedImageAvailable = false
         private set
@@ -101,6 +104,7 @@ class MatisseImageCropActivity : AppCompatActivity() {
             currentPage = intent.getIntExtra(BUNDLE_POSITION, 0)
             storeFilePath = intent.getStringExtra(PARAM_STORE_FILE_PATH)
             isCheckUri = intent.getBooleanExtra(PARAM_TYPE_URI, false)
+            useCropRatio = intent.getSerializableExtra(PARAM_CROP_RATIO,) as ArrayList<Float>
             imageCropViewPagerAdapter = MatisseImageCropViewPagerAdapter(supportFragmentManager, this, imagePathArrays?.toMutableList(), imagePathUriArrays?.toMutableList(), storedImageFileNameArrays?.toMutableList() ,storeFilePath, isCheckUri)
             viewPagerImageCrop!!.adapter = imageCropViewPagerAdapter
             viewPagerImageCrop!!.addOnPageChangeListener(viewPagerOnPageChangeListener)
@@ -192,7 +196,9 @@ class MatisseImageCropActivity : AppCompatActivity() {
             val uCrop = UCrop.of(uri, outputUri)
             val uCropOption = UCrop.Options()
             uCropOption.setCompressionQuality(25)
-            uCrop.withMaxResultSize(1920, 1920)
+            uCropOption.withAspectRatio(useCropRatio[0], useCropRatio[1])
+            uCropOption.setFreeStyleCropEnabled(true)
+            uCropOption.withMaxResultSize(1920, 1920)
             uCrop.withOptions(uCropOption);
 
             uCrop.start(this@MatisseImageCropActivity, UCrop.REQUEST_CROP)
@@ -370,15 +376,12 @@ class MatisseImageCropActivity : AppCompatActivity() {
             actionBar.setDisplayHomeAsUpEnabled(true)
             actionBar.setHomeButtonEnabled(true)
             actionBar.setDisplayShowTitleEnabled(false)
-            val xBtn = ContextCompat.getDrawable(this, R.drawable.ic_x)
-
-            xBtn?.setTintList(
-                when {
+            toolbar!!.navigationIcon?.setTintList(
+                when{
                     !isDarkMode(this) -> ColorStateList.valueOf(Color.BLACK)
                     else -> ColorStateList.valueOf(Color.WHITE)
                 }
             )
-            actionBar.setHomeAsUpIndicator(xBtn)
         }
     }
 
@@ -410,6 +413,7 @@ class MatisseImageCropActivity : AppCompatActivity() {
         const val PARAM_STORE_FILE_PATH = "storeFilePath"
         const val PARAM_IMAGE_EDITED = "imageEdited"
         const val PARAM_TYPE_URI = "isUriType"
+        const val PARAM_CROP_RATIO = "useCropRatio"
         const val BUNDLE_POSITION = "position"
 
         private fun setMenuTextColor(context: Context, toolbar: Toolbar?, title: String, menuResId: Int, colorRes: Int) {

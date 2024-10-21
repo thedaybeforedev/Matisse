@@ -22,12 +22,14 @@ import androidx.annotation.StyleRes;
 
 import com.zhihu.matisse.MimeType;
 import com.zhihu.matisse.R;
+import com.zhihu.matisse.data.AspectRatios;
 import com.zhihu.matisse.engine.ImageEngine;
 import com.zhihu.matisse.engine.impl.GlideEngine;
 import com.zhihu.matisse.filter.Filter;
 import com.zhihu.matisse.listener.OnCheckedListener;
 import com.zhihu.matisse.listener.OnSelectedListener;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -59,6 +61,7 @@ public final class SelectionSpec {
     public boolean showPreview;
     public boolean isUseCrop = false;  //이미지 선택 후 크롭 사용 여부
     public boolean isTypeUri = false; //이미지가 uri인지 체크 (uri일때는 사진리스트를 1개만 보내야함 추후 여러장 가능하게 필요할까?)
+    public ArrayList<Float> cropRatio = AspectRatios.INSTANCE.getRatioFree();
 
     private SelectionSpec() {
     }
@@ -77,7 +80,7 @@ public final class SelectionSpec {
         mimeTypeSet = null;
         mediaTypeExclusive = true;
         showSingleMediaType = false;
-        themeId = R.style.Matisse_Zhihu;
+        themeId = R.style.MatisseDefault;
         orientation = 0;
         countable = false;
         maxSelectable = 1;
