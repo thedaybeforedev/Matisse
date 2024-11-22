@@ -1,11 +1,14 @@
 package com.zhihu.matisse.ui
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.text.TextUtils
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,15 +20,18 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.gif.GifDrawable
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.signature.ObjectKey
 import com.zhihu.matisse.R
+import com.zhihu.matisse.ui.MatisseImageCropActivity.Companion.PARAM_STORE_FILE_NAME
 import java.io.File
 
 class MatisseImageCropViewFragment : Fragment() {
 
     var imagePath: String? = null
     var imageUri: String? = null
+    var storedImageFileName: String? = null
     var cropImageView: AppCompatImageView? = null
     var relativeProgressBar: View? = null
     var textViewCreateDate: TextView? = null
@@ -80,6 +86,9 @@ class MatisseImageCropViewFragment : Fragment() {
             if(imageUri == null){
                 imageUri = requireArguments().getString(MatisseImageCropActivity.PARAM_IMAGEURI)
             }
+            if(storedImageFileName == null){
+                storedImageFileName = requireArguments().getString(PARAM_STORE_FILE_NAME)
+            }
             isCheckUri = requireArguments().getBoolean(MatisseImageCropActivity.PARAM_TYPE_URI, false)
             loadCropImage()
         }
@@ -105,9 +114,8 @@ class MatisseImageCropViewFragment : Fragment() {
 
         //cropImageView!!.setImageUriAsync(Uri.fromFile(file)) // 크롭할 이미지 URI 설정
 
-
-        if (!TextUtils.isEmpty(loadImageFilePath))
-            Glide.with(this)
+        Glide.with(requireContext())
+            .asBitmap()
             .load(if(!isCheckUri){
                 loadImageFilePath
             }else if(isCheckUri && isCropImage){
@@ -115,36 +123,81 @@ class MatisseImageCropViewFragment : Fragment() {
             }else{
                 Uri.parse(imageUri)
             })
-            .apply(RequestOptions().signature(ObjectKey(File(loadImageFilePath).lastModified())))
-            .listener(object : RequestListener<Drawable?> {
-
-                override fun onLoadFailed(
-                    e: GlideException?,
-                    model: Any?,
-                    target: Target<Drawable?>?,
-                    isFirstResource: Boolean
-                ): Boolean {
-                    hideProgressLoading()
-                    return false
-                }
+            .into(object : CustomTarget<Bitmap>() {
 
                 override fun onResourceReady(
-                    resource: Drawable?,
-                    model: Any?,
-                    target: Target<Drawable?>?,
-                    dataSource: com.bumptech.glide.load.DataSource?,
-                    isFirstResource: Boolean
-                ): Boolean {
-                    hideProgressLoading()
-                    if (resource is GifDrawable) {
-                        return true
-                    }
-                    return false
+                    resource: Bitmap,
+                    transition: com.bumptech.glide.request.transition.Transition<in Bitmap>?
+                ) {
+                    saveBitmapAsFile(resource, requireContext())
                 }
 
-
+                override fun onLoadCleared(placeholder: Drawable?) {
+                    // 메모리 관리를 위해 필요한 경우 구현
+                }
             })
-            .into(cropImageView!!)
+
+
+        if (!TextUtils.isEmpty(loadImageFilePath)){
+            Glide.with(this)
+                .load(if(!isCheckUri){
+                    loadImageFilePath
+                }else if(isCheckUri && isCropImage){
+                    loadImageFilePath
+                }else{
+                    Uri.parse(imageUri)
+                })
+                .apply(RequestOptions().signature(ObjectKey(File(loadImageFilePath).lastModified())))
+                .listener(object : RequestListener<Drawable?> {
+
+                    override fun onLoadFailed(
+                        e: GlideException?,
+                        model: Any?,
+                        target: Target<Drawable?>?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        hideProgressLoading()
+                        return false
+                    }
+
+                    override fun onResourceReady(
+                        resource: Drawable?,
+                        model: Any?,
+                        target: Target<Drawable?>?,
+                        dataSource: com.bumptech.glide.load.DataSource?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        hideProgressLoading()
+                        if (resource is GifDrawable) {
+                            return true
+                        }
+                        return false
+                    }
+
+
+                })
+                .into(cropImageView!!)
+
+        }
+
+    }
+
+    fun saveBitmapAsFile(bitmap: Bitmap, context: Context): File? {
+        return try {
+            // 저장할 파일 경로 지정
+            val savePath = context.cacheDir.path + "/images"
+            val file = storedImageFileName?.let { File(savePath, it) }
+
+            // OutputStream을 통해 Bitmap을 JPG로 저장
+            file?.outputStream().use { outputStream ->
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+            }
+
+            file // 저장된 파일 반환
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null // 저장 실패 시 null 반환
+        }
     }
 
 
@@ -190,12 +243,13 @@ class MatisseImageCropViewFragment : Fragment() {
 
 
     companion object {
-        fun newInstance(imagePath: String?, imageUri: String?, isTypeUri: Boolean): MatisseImageCropViewFragment {
+        fun newInstance(imagePath: String?, imageUri: String?, isTypeUri: Boolean, storeFileName: String?): MatisseImageCropViewFragment {
             val fragment = MatisseImageCropViewFragment()
             val args = Bundle()
             args.putString(MatisseImageCropActivity.PARAM_IMAGEPATH, imagePath)
             args.putString(MatisseImageCropActivity.PARAM_IMAGEURI, imageUri)
             args.putBoolean(MatisseImageCropActivity.PARAM_TYPE_URI, isTypeUri)
+            args.putString(PARAM_STORE_FILE_NAME, storeFileName)
             fragment.arguments = args
             return fragment
         }

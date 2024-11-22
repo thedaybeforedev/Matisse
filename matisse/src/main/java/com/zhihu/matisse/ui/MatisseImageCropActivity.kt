@@ -180,20 +180,13 @@ class MatisseImageCropActivity : AppCompatActivity() {
         val imagePath = imagePathArrays?.get(currentPage)
 
         if (imagePath != null && imagePath.isNotEmpty()) {
-            val file: File
-            val uri: Uri
-            if (!isCheckUri){
-                file = File(imagePath)
-                uri = Uri.fromFile(file)
-            }else{
-                uri = Uri.parse(imagePath)
-            }
+
             val outputUri = Uri.fromFile(File("${cacheDir}/images",
                 storedImageFileNameArrays?.get(currentPage) ?: storedImageFileNameArrays?.get(0)
             ))
 
             // UCrop 설정
-            val uCrop = UCrop.of(uri, outputUri)
+            val uCrop = UCrop.of(outputUri, outputUri)
             val uCropOption = UCrop.Options()
             uCropOption.setCompressionQuality(25)
             uCropOption.withAspectRatio(useCropRatio[0], useCropRatio[1])
