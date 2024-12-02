@@ -2,20 +2,24 @@ package com.zhihu.matisse.Util;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
+import android.provider.MediaStore;
 import android.text.TextUtils;
 
 import androidx.exifinterface.media.ExifInterface;
 
 import java.io.File;
 import java.io.FileDescriptor;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 class MatisseImageUtil {
 
@@ -23,234 +27,85 @@ class MatisseImageUtil {
 
     }
 
-    static File compressImage(File imageFile, int reqWidth, int reqHeight, Bitmap.CompressFormat compressFormat, int quality, String destinationPath) throws IOException {
-        FileOutputStream fileOutputStream = null;
-        File file = new File(destinationPath).getParentFile();
-        if (!file.exists()) {
-            file.mkdirs();
+
+    public static Bitmap processImage(Context context, String filePath, int maxDimension) throws IOException {
+        Uri imageUri = getImageUri(context, filePath);
+
+        if (imageUri == null) {
+            throw new FileNotFoundException("File not found or inaccessible: " + filePath);
         }
 
-        String createDate = null;
-        try {
-            ExifInterface exif = new ExifInterface(imageFile.getAbsolutePath());
-            createDate = exif.getAttribute(ExifInterface.TAG_DATETIME);
-
-            fileOutputStream = new FileOutputStream(destinationPath);
-            // write the compressed bitmap at the destination specified by destinationPath.
-
-            Bitmap bitmap = decodeAndScaleBitmapWithAspectRatio(imageFile, reqWidth, reqHeight);
-
-            if (bitmap != null)
-                bitmap.compress(compressFormat, quality, fileOutputStream);
-
-
-        } finally {
-            if (fileOutputStream != null) {
-                fileOutputStream.flush();
-                fileOutputStream.close();
-            }
-        }
-
-
-        if (!TextUtils.isEmpty(createDate)) {
-            ExifInterface newExif = new ExifInterface(destinationPath);
-
-            newExif.setAttribute(ExifInterface.TAG_DATETIME, createDate);
-
-            newExif.saveAttributes();
-        }
-
-        return new File(destinationPath);
-    }
-
-    static File compressImage(Context context, Uri contentUri, int reqWidth, int reqHeight, Bitmap.CompressFormat compressFormat, int quality, String destinationPath) throws IOException {
+        // ContentResolver로 InputStream 열기
         ContentResolver contentResolver = context.getContentResolver();
-        FileOutputStream fileOutputStream = null;
-        File file = new File(destinationPath).getParentFile();
-        if (!file.exists()) {
-            file.mkdirs();
+        InputStream inputStream = contentResolver.openInputStream(imageUri);
+
+        if (inputStream == null) {
+            throw new IOException("Unable to open input stream for URI: " + imageUri);
         }
 
-        String createDate = null;
-        try {
-            ParcelFileDescriptor fileDescriptor = contentResolver.openFileDescriptor(contentUri, "r");
-
-            ExifInterface exif = new ExifInterface(fileDescriptor.getFileDescriptor());
-            createDate = exif.getAttribute(ExifInterface.TAG_DATETIME);
-            fileDescriptor = contentResolver.openFileDescriptor(contentUri, "r");
-            fileOutputStream = new FileOutputStream(destinationPath);
-            // write the compressed bitmap at the destination specified by destinationPath.
-
-            Bitmap bitmap = decodeSampledBitmapFromFileDescriptor(fileDescriptor.getFileDescriptor(),exif, reqWidth, reqHeight);
-
-            if (bitmap != null)
-                bitmap.compress(compressFormat, quality, fileOutputStream);
-
-
-        } finally {
-            if (fileOutputStream != null) {
-                fileOutputStream.flush();
-                fileOutputStream.close();
-            }
-        }
-
-
-
-        try {
-            if (!TextUtils.isEmpty(createDate)) {
-                ExifInterface newExif = new ExifInterface(destinationPath);
-
-                newExif.setAttribute(ExifInterface.TAG_DATETIME, createDate);
-
-                newExif.saveAttributes();
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-
-        return new File(destinationPath);
-    }
-
-    static File compressImage(Bitmap bitmap, Bitmap.CompressFormat compressFormat, int quality, String destinationPath) throws IOException {
-        FileOutputStream fileOutputStream = null;
-        File file = new File(destinationPath).getParentFile();
-        if (!file.exists()) {
-            file.mkdirs();
-        }
-        try {
-            fileOutputStream = new FileOutputStream(destinationPath);
-            // write the compressed bitmap at the destination specified by destinationPath.
-            bitmap.compress(compressFormat, quality, fileOutputStream);
-        } finally {
-            if (fileOutputStream != null) {
-                fileOutputStream.flush();
-                fileOutputStream.close();
-            }
-        }
-
-        return new File(destinationPath);
-    }
-
-    static Bitmap decodeSampledBitmapFromFileDescriptor(FileDescriptor fileDescriptor, ExifInterface exif, int reqWidth, int reqHeight) throws IOException {
-        // First decode with inJustDecodeBounds=true to check dimensions
+        // 이미지 디코딩 및 크기 제한
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
+        BitmapFactory.decodeStream(inputStream, null, options);
+        inputStream.close();
 
-        // Calculate inSampleSize
-        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
-
-        Bitmap scaledBitmap = null;
-
-        // Decode bitmap with inSampleSize set
+        // 크기를 제한할 샘플링 비율 계산
+        options.inSampleSize = calculateInSampleSize(options, maxDimension, maxDimension);
         options.inJustDecodeBounds = false;
 
-        if (reqWidth < options.outWidth || reqHeight < options.outHeight) {
-            int width = options.outWidth;
-            int height = options.outHeight;
-            float ratioBitmap = (float) width / (float) height;
-            float ratioMax = (float) reqWidth / (float) reqWidth;
+        // InputStream 다시 열기
+        inputStream = contentResolver.openInputStream(imageUri);
+        Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
+        inputStream.close();
 
-            int finalWidth = reqWidth;
-            int finalHeight = reqHeight;
-            if (ratioMax > ratioBitmap) {
-                finalWidth = (int) ((float) reqHeight * ratioBitmap);
-            } else {
-                finalHeight = (int) ((float) reqWidth / ratioBitmap);
-            }
-
-            options.outWidth = finalWidth;
-            options.outHeight = finalHeight;
-            scaledBitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeFileDescriptor(fileDescriptor, new Rect(), options), finalWidth, finalHeight, true);
-
-        } else {
-            scaledBitmap = BitmapFactory.decodeFileDescriptor(fileDescriptor,new Rect(), options);
+        if (bitmap == null) {
+            throw new IOException("Failed to decode bitmap.");
         }
 
-        if (scaledBitmap == null)
-            return null;
+        // EXIF 데이터를 기반으로 회전 처리
+        InputStream exifInputStream = contentResolver.openInputStream(imageUri);
+        ExifInterface exif = new ExifInterface(exifInputStream);
+        int rotation = getRotationFromExif(exif);
+        exifInputStream.close();
 
-
-        //check the rotation of the image and display it properly
-        int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 0);
-        Matrix matrix = new Matrix();
-        if (orientation == 6) {
-            matrix.postRotate(90);
-        } else if (orientation == 3) {
-            matrix.postRotate(180);
-        } else if (orientation == 8) {
-            matrix.postRotate(270);
+        // 회전이 필요하다면 이미지 회전
+        if (rotation != 0) {
+            bitmap = rotateBitmap(bitmap, rotation);
         }
-        scaledBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.getWidth(), scaledBitmap.getHeight(), matrix, true);
-        return scaledBitmap;
+
+        // 비율을 유지하면서 크기를 조정합니다
+        return resizeBitmap(bitmap, maxDimension);
     }
 
+    // 이미지 비율을 유지하면서 최대 크기 제한하기
+    private static Bitmap resizeBitmap(Bitmap bitmap, int maxDimension) {
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
 
-
-    public static Bitmap decodeSampledBitmapFromFile(File imageFile, int reqWidth, int reqHeight) throws IOException {
-        // First decode with inJustDecodeBounds=true to check dimensions
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options);
-
-        // Calculate inSampleSize based on required width and height
-        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
-
-        // Decode bitmap with inSampleSize set
-        options.inJustDecodeBounds = false;
-        Bitmap decodedBitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options);
-
-        // Read EXIF data to check the orientation
-        ExifInterface exif = new ExifInterface(imageFile.getAbsolutePath());
-        int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-
-        // Rotate the bitmap according to the EXIF orientation if needed
-        Matrix matrix = new Matrix();
-        switch (orientation) {
-            case ExifInterface.ORIENTATION_ROTATE_90:
-                matrix.postRotate(90);
-                break;
-            case ExifInterface.ORIENTATION_ROTATE_180:
-                matrix.postRotate(180);
-                break;
-            case ExifInterface.ORIENTATION_ROTATE_270:
-                matrix.postRotate(270);
-                break;
-            default:
-                break;
+        if (width <= maxDimension && height <= maxDimension) {
+            return bitmap; // 크기가 이미 제한 이하이면 그대로 반환
         }
 
-        // Apply the rotation (or no rotation)
-        Bitmap rotatedBitmap = Bitmap.createBitmap(decodedBitmap, 0, 0, decodedBitmap.getWidth(), decodedBitmap.getHeight(), matrix, true);
+        float ratio = Math.min((float) maxDimension / width, (float) maxDimension / height);
+        int newWidth = Math.round(ratio * width);
+        int newHeight = Math.round(ratio * height);
 
-        // Scale the bitmap to the required width and height
-        Bitmap scaledBitmap = Bitmap.createScaledBitmap(rotatedBitmap, reqWidth, reqHeight, true);
-
-        // Clean up the original bitmaps if they are not needed
-        if (rotatedBitmap != decodedBitmap) {
-            decodedBitmap.recycle();
-        }
-        if (scaledBitmap != rotatedBitmap) {
-            rotatedBitmap.recycle();
-        }
-
-        return scaledBitmap;
+        // 리사이징 후 새 비트맵 생성
+        return Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
     }
 
-
+    // inSampleSize 계산 (이미지 크기 비율을 맞추기 위해)
     private static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
-        // Raw height and width of image
-        final int height = options.outHeight;
-        final int width = options.outWidth;
+        // 원본 이미지 크기
+        int width = options.outWidth;
+        int height = options.outHeight;
         int inSampleSize = 1;
 
         if (height > reqHeight || width > reqWidth) {
-
+            // 비율에 맞게 크기를 줄이기 위한 샘플링 비율 계산
             final int halfHeight = height / 2;
             final int halfWidth = width / 2;
 
-            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
-            // height and width larger than the requested height and width.
             while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) {
                 inSampleSize *= 2;
             }
@@ -258,83 +113,43 @@ class MatisseImageUtil {
 
         return inSampleSize;
     }
-
-    public static Bitmap decodeAndScaleBitmapWithAspectRatio(File imageFile, int reqWidth, int reqHeight) throws IOException {
-        // First decode with inJustDecodeBounds=true to check dimensions
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options);
-
-        // Calculate the optimal width and height maintaining the aspect ratio
-        int[] scaledDimensions = calculateAspectRatio(imageFile, options.outWidth, options.outHeight, reqWidth, reqHeight);
-        int scaledWidth = scaledDimensions[0];
-        int scaledHeight = scaledDimensions[1];
-
-        // Decode bitmap with calculated inSampleSize set
-        options.inSampleSize = calculateInSampleSize(options, scaledWidth, scaledHeight);
-        options.inJustDecodeBounds = false;
-        Bitmap decodedBitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options);
-
-        // Read EXIF data to check the orientation
-        ExifInterface exif = new ExifInterface(imageFile.getAbsolutePath());
+    private static int getRotationFromExif(ExifInterface exif) {
         int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-
-        // Rotate the bitmap according to the EXIF orientation if needed
-        Matrix matrix = new Matrix();
         switch (orientation) {
             case ExifInterface.ORIENTATION_ROTATE_90:
-                matrix.postRotate(90);
-                break;
+                return 90;
             case ExifInterface.ORIENTATION_ROTATE_180:
-                matrix.postRotate(180);
-                break;
+                return 180;
             case ExifInterface.ORIENTATION_ROTATE_270:
-                matrix.postRotate(270);
-                break;
+                return 270;
             default:
-                break;
+                return 0;
         }
-
-        // Apply the rotation (or no rotation) and scale the bitmap to the required width and height
-        Bitmap rotatedBitmap = Bitmap.createBitmap(decodedBitmap, 0, 0, decodedBitmap.getWidth(), decodedBitmap.getHeight(), matrix, true);
-
-        // Scale the bitmap while maintaining aspect ratio
-        Bitmap scaledBitmap = Bitmap.createScaledBitmap(rotatedBitmap, scaledWidth, scaledHeight, true);
-
-        // Clean up the original bitmaps if they are not needed
-        if (rotatedBitmap != decodedBitmap) {
-            decodedBitmap.recycle();
-        }
-        if (scaledBitmap != rotatedBitmap) {
-            rotatedBitmap.recycle();
-        }
-
-        return scaledBitmap;
     }
 
-    private static int[] calculateAspectRatio(File imageFile, int originalWidth, int originalHeight, int reqWidth, int reqHeight) throws IOException {
-        ExifInterface exif = new ExifInterface(imageFile.getAbsolutePath());
-        int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-
-        // 회전된 이미지를 원래 방향으로 돌리기 위해 너비와 높이를 교환
-        if (orientation == ExifInterface.ORIENTATION_ROTATE_90 || orientation == ExifInterface.ORIENTATION_ROTATE_270) {
-            int temp = originalWidth;
-            originalWidth = originalHeight;
-            originalHeight = temp;
-        }
-
-        int finalWidth, finalHeight;
-
-        if (originalWidth > originalHeight) {
-            float ratio = (float) reqWidth / originalWidth;
-            finalWidth = reqWidth;
-            finalHeight = (int) (originalHeight * ratio);
-        } else {
-            float ratio = (float) reqHeight / originalHeight;
-            finalHeight = reqHeight;
-            finalWidth = (int) (originalWidth * ratio);
-        }
-
-        return new int[]{finalWidth, finalHeight};
+    private static Bitmap rotateBitmap(Bitmap bitmap, int rotation) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(rotation);
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
     }
+
+    private static Uri getImageUri(Context context, String filePath) {
+        // MediaStore에서 파일 URI를 가져옴
+        ContentResolver contentResolver = context.getContentResolver();
+        Uri collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+
+        String[] projection = {MediaStore.Images.Media._ID};
+        String selection = MediaStore.Images.Media.DATA + " = ?";
+        String[] selectionArgs = {filePath};
+
+        try (Cursor cursor = contentResolver.query(collection, projection, selection, selectionArgs, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                long id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID));
+                return Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, String.valueOf(id));
+            }
+        }
+
+        return null;
+    }
+
 }

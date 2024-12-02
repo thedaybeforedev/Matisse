@@ -44,53 +44,9 @@ public class MatisseCompressor {
         return this;
     }
 
-    public File compressToFile(File imageFile) throws IOException {
-        return compressToFile(imageFile, imageFile.getName());
-    }
-
-    public File compressToFile(File imageFile, String compressedFileName) throws IOException {
-        return MatisseImageUtil.compressImage(imageFile, maxWidth, maxHeight, compressFormat, quality,
-                destinationDirectoryPath + File.separator + compressedFileName);
-    }
-
-    public File compressUriToFile(Context context, Uri imageFile, String compressedFileName) throws IOException {
-        return MatisseImageUtil.compressImage(context, imageFile, maxWidth, maxHeight, compressFormat, quality,
-                destinationDirectoryPath + File.separator + compressedFileName);
-    }
-
-    public Bitmap compressToBitmap(File imageFile) throws IOException {
-        return MatisseImageUtil.decodeSampledBitmapFromFile(imageFile, maxWidth, maxHeight);
+    public Bitmap compressToFile(Context context, File imageFile) throws IOException {
+        return MatisseImageUtil.processImage(context, imageFile.getAbsolutePath(), maxWidth);
     }
 
 
-    //rxjava2 spec
-//    public Flowable<File> compressToFileAsFlowable(final File imageFile) {
-//        return compressToFileAsFlowable(imageFile, imageFile.getName());
-//    }
-//
-//    public Flowable<File> compressToFileAsFlowable(final File imageFile, final String compressedFileName) {
-//        return Flowable.defer(new Callable<Flowable<File>>() {
-//            @Override
-//            public Flowable<File> call() {
-//                try {
-//                    return Flowable.just(compressToFile(imageFile, compressedFileName));
-//                } catch (IOException e) {
-//                    return Flowable.error(e);
-//                }
-//            }
-//        });
-//    }
-//
-//    public Flowable<Bitmap> compressToBitmapAsFlowable(final File imageFile) {
-//        return Flowable.defer(new Callable<Flowable<Bitmap>>() {
-//            @Override
-//            public Flowable<Bitmap> call() {
-//                try {
-//                    return Flowable.just(compressToBitmap(imageFile));
-//                } catch (IOException e) {
-//                    return Flowable.error(e);
-//                }
-//            }
-//        });
-//    }
 }

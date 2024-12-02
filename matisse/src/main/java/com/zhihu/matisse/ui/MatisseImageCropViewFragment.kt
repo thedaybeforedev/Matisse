@@ -112,32 +112,6 @@ class MatisseImageCropViewFragment : Fragment() {
             }
         }
 
-        //cropImageView!!.setImageUriAsync(Uri.fromFile(file)) // 크롭할 이미지 URI 설정
-
-        Glide.with(requireContext())
-            .asBitmap()
-            .load(if(!isCheckUri){
-                loadImageFilePath
-            }else if(isCheckUri && isCropImage){
-                loadImageFilePath
-            }else{
-                Uri.parse(imageUri)
-            })
-            .into(object : CustomTarget<Bitmap>() {
-
-                override fun onResourceReady(
-                    resource: Bitmap,
-                    transition: com.bumptech.glide.request.transition.Transition<in Bitmap>?
-                ) {
-                    saveBitmapAsFile(resource, requireContext())
-                }
-
-                override fun onLoadCleared(placeholder: Drawable?) {
-                    // 메모리 관리를 위해 필요한 경우 구현
-                }
-            })
-
-
         if (!TextUtils.isEmpty(loadImageFilePath)){
             Glide.with(this)
                 .load(if(!isCheckUri){

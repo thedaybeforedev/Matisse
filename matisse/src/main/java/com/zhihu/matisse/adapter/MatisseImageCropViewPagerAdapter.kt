@@ -3,11 +3,7 @@ package com.zhihu.matisse.adapter
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Matrix
-import android.media.ExifInterface
-import android.net.Uri
 import android.text.TextUtils
-import android.util.Log
 import android.util.SparseArray
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -18,6 +14,7 @@ import com.zhihu.matisse.Util.MatisseCompressor
 import com.zhihu.matisse.ui.MatisseImageCropViewFragment
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
@@ -80,85 +77,35 @@ class MatisseImageCropViewPagerAdapter(fm: FragmentManager?, var mContext: Conte
                     path = downloadImageToFile(fragment.imagePath!!, file)
                     return path
                 }else{
-                    val imageFile = File("${mContext.cacheDir}/images", storedImageFileNameList?.get(position) ?: storedImageFileNameList?.get(0))
-                    return compressImageFile(mContext, imageFile, storedImageFileNameList!![position], 80)?.absolutePath
+                    val file = compressor.setMaxHeight(1920).setMaxWidth(1920) //                      .setCompressFormat(Bitmap.CompressFormat.WEBP)
+                        .compressToFile(mContext, File(fragment.imagePath!!))
+                    return  saveBitmapToFile(mContext, file, fileName = storedImageFileNameList?.get(position) ?: "${System.currentTimeMillis()}.jpg")?.absolutePath
                 }
             }
     }
 
-    // 1. 이미지 파일에서 Bitmap 디코딩 및 EXIF 처리
-    fun decodeAndFixOrientation(file: File): Bitmap? {
-        try {
-            val bitmap = BitmapFactory.decodeFile(file.absolutePath)
-            val exif = ExifInterface(file.absolutePath)
-
-            // EXIF 데이터를 기반으로 이미지 회전 확인
-            val orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
-            val matrix = Matrix()
-            when (orientation) {
-                ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
-                ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
-                ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
-            }
-
-            return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return null
-        }
+    private fun saveBitmapToFile(context: Context, bitmap: Bitmap, compressFormat: Bitmap.CompressFormat = Bitmap.CompressFormat.JPEG, quality: Int = 80, fileName: String): File? {
+            return saveBitmapToAppStorage(context, bitmap, compressFormat, quality, fileName)
     }
 
-    // 2. 비율에 맞게 크기 조정
-    fun scaleBitmap(bitmap: Bitmap, maxWidth: Int, maxHeight: Int): Bitmap {
-        val width = bitmap.width
-        val height = bitmap.height
-        val aspectRatio = width.toFloat() / height.toFloat()
-
-        val newWidth: Int
-        val newHeight: Int
-
-        if (width > height) {
-            newWidth = maxWidth
-            newHeight = (maxWidth / aspectRatio).toInt()
-        } else {
-            newHeight = maxHeight
-            newWidth = (maxHeight * aspectRatio).toInt()
+    private fun saveBitmapToAppStorage(context: Context, bitmap: Bitmap, compressFormat: Bitmap.CompressFormat = Bitmap.CompressFormat.JPEG, quality: Int = 100, fileName: String): File? {
+        val appSpecificDir = "${context.cacheDir}/images"
+        val file = File(appSpecificDir, fileName)
+        if (!File(appSpecificDir).exists()) {
+            File(appSpecificDir).mkdirs()  // 폴더가 없으면 생성
         }
-
-        return Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true)
-    }
-
-    // 3. 이미지 압축
-    fun compressImageFile(
-        context: Context,
-        imageFile: File,
-        outputFileName: String,
-        quality: Int = 50,
-        maxWidth: Int = 1920,
-        maxHeight: Int = 1920
-    ): File? {
         return try {
-            // Step 1: EXIF 기반 방향 조정
-            val originalBitmap = decodeAndFixOrientation(imageFile)
-                ?: throw Exception("Failed to decode image file.")
-
-            // Step 2: 크기 조정
-            val scaledBitmap = scaleBitmap(originalBitmap, maxWidth, maxHeight)
-
-            // Step 3: 압축 후 파일 저장
-            val path = context.cacheDir.absolutePath + File.separator + "images"
-            val compressedFile = File(path, outputFileName)
-            compressedFile.outputStream().use { outputStream ->
-                scaledBitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream)
+            FileOutputStream(file).use { fos ->
+                bitmap.compress(compressFormat, quality, fos)
+                fos.flush()
             }
-
-            Log.d("ImageCompression", "File compressed successfully: ${compressedFile.absolutePath}")
-            compressedFile
-        } catch (e: Exception) {
+            file
+        } catch (e: IOException) {
             e.printStackTrace()
             null
         }
     }
+
     fun downloadImageToFile(imageUrl: String, file: File): String? {
 
         try {

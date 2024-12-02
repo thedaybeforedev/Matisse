@@ -22,6 +22,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -47,6 +48,7 @@ import com.zhihu.matisse.engine.impl.GlideEngine;
 import com.zhihu.matisse.filter.Filter;
 import com.zhihu.matisse.internal.entity.CaptureStrategy;
 import com.zhihu.matisse.ui.MatisseImageCropActivity;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -188,22 +190,26 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void checkStoragePermission() {
-        // 권한이 이미 허용되었는지 확인
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            proceedWithStorageAccess();
+            return;
+        }
 
-            // 권한이 거부되었을 때 요청
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                // 사용자가 이전에 권한 요청을 거부했을 경우 설명을 추가적으로 보여줄 수 있습니다.
-                Toast.makeText(this, "Storage permission is required to save files.", Toast.LENGTH_LONG).show();
+        String[] permissions = {
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+        };
+
+        List<String> permissionsToRequest = new ArrayList<>();
+        for (String permission : permissions) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(permission);
             }
+        }
 
-            // 권한 요청
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    PERMISSION_REQUEST_CODE);
+        if (!permissionsToRequest.isEmpty()) {
+            ActivityCompat.requestPermissions(this, permissionsToRequest.toArray(new String[0]), PERMISSION_REQUEST_CODE);
         } else {
-            // 권한이 이미 허용된 경우
             proceedWithStorageAccess();
         }
     }
