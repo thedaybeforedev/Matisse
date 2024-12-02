@@ -18,7 +18,9 @@ package com.zhihu.matisse;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
+import android.util.Log;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.IntDef;
@@ -365,7 +367,49 @@ public final class SelectionCreator {
 
     /**
      *
-     * @param imageList :
+     * @param imageList : 보여질 이미지, uriList: 보여질 이미지 uri
+     * @param launcher
+     */
+    public void forCropResult(String[] imageList, Uri[] uriList, ActivityResultLauncher<Intent> launcher) {
+        Activity activity = mMatisse.getActivity();
+        if (activity == null) {
+            return;
+        }
+
+        Intent cropIntent = new Intent(activity, MatisseImageCropActivity.class);
+        String[] storedFileNames = new String[imageList.length];
+
+        for (int i = 0; i < uriList.length; i++) {
+            Log.d("tetetetetet ㅅ", String.valueOf(uriList[i]));
+        }
+
+        Calendar calendar = Calendar.getInstance();
+        String yyyymmddhhmmss = String.format(Locale.getDefault(), "%04d%02d%02d%02d%02d%02d",
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH) + 1, // MONTH는 0부터 시작하므로 +1
+                calendar.get(Calendar.DAY_OF_MONTH),
+                calendar.get(Calendar.HOUR_OF_DAY),
+                calendar.get(Calendar.MINUTE),
+                calendar.get(Calendar.SECOND));
+        String[] uriToString = new String[imageList.length];
+        for (int i = 0; i < imageList.length; i++) {
+            uriToString[i] = uriList[i].toString();
+            storedFileNames[i] = String.format(Locale.getDefault(), "%s_%d.%s", yyyymmddhhmmss, i, "jpg");
+        }
+
+        cropIntent.putExtra(MatisseImageCropActivity.PARAM_IMAGEPATH_ARRAY, imageList);
+        cropIntent.putExtra(MatisseImageCropActivity.PARAM_IMAGEURI_ARRAY, uriToString);
+        cropIntent.putExtra(MatisseImageCropActivity.PARAM_TYPE_URI, mSelectionSpec.isTypeUri);
+        cropIntent.putExtra(MatisseImageCropActivity.PARAM_CROP_RATIO, mSelectionSpec.cropRatio);
+        cropIntent.putExtra(MatisseImageCropActivity.PARAM_STORE_FILE_NAME_ARRAY, storedFileNames);
+
+        launcher.launch(cropIntent);
+        mSelectionSpec.isTypeUri = false;
+    }
+
+    /**
+     *
+     * @param imageList : 보여질 이미지
      * @param launcher
      */
     public void forCropResult(String[] imageList, ActivityResultLauncher<Intent> launcher) {
@@ -376,6 +420,7 @@ public final class SelectionCreator {
 
         Intent cropIntent = new Intent(activity, MatisseImageCropActivity.class);
         String[] fileNames = imageList;
+
         String[] storedFileNames = new String[imageList.length];
 
         Calendar calendar = Calendar.getInstance();

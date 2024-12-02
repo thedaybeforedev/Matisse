@@ -17,6 +17,7 @@ package com.zhihu.matisse.sample;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -39,6 +40,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.zhihu.matisse.Matisse;
@@ -48,6 +50,8 @@ import com.zhihu.matisse.engine.impl.GlideEngine;
 import com.zhihu.matisse.filter.Filter;
 import com.zhihu.matisse.internal.entity.CaptureStrategy;
 import com.zhihu.matisse.ui.MatisseImageCropActivity;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -144,11 +148,11 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
                 break;
             case R.id.dracula:
 
-                String[] fileListArray = new String[3];
+                String[] fileListArray = new String[1];
 
                 for (int i = 0; i < fileListArray.length; i++) {
                     if(i == 0){
-                        fileListArray[0] = "/data/user/0/com.zhihu.matisse.sample/cache/images/20240906164522_0.jpg";
+                        fileListArray[0] = "/data/user/0/com.zhihu.matisse.sample/cache/images/20241202155943_0.jpg";
                     }
                     else if(i == 1){
                         fileListArray[1] = "/data/user/0/com.zhihu.matisse.sample/cache/images/20240906164522_1.jpg";
@@ -156,10 +160,22 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
                         fileListArray[2] = "/data/user/0/com.zhihu.matisse.sample/cache/images/20240906164522_2.jpg";
                     }
                 }
+                Uri[] imageListArray = new Uri[fileListArray.length];
+                for (int i = 0; i < fileListArray.length; i++) {
+                    if(i == 0){
+                        imageListArray[0] = getImageUri(this, fileListArray[0]);
+                    }
+                    else if(i == 1){
+                        imageListArray[1] = getImageUri(this, fileListArray[1]);
+                    }else if(i == 2){
+                        imageListArray[2] = getImageUri(this, fileListArray[2]);
+                    }
+                }
+
                 //크롭만 사용할때 예시
                 Matisse.from(SampleActivity.this)
                         .choose(MimeType.ofImage())
-                        .forCropResult(fileListArray, activityResultLauncher);
+                        .forCropResult(fileListArray, imageListArray, activityResultLauncher);
                 break;
             case R.id.only_gif:
                 String[] fileListArrays = new String[1];
@@ -186,6 +202,19 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE_CHOOSE && resultCode == RESULT_OK) {
             mAdapter.setData(Matisse.obtainResult(data), Matisse.obtainPathResult(data));
+        }
+    }
+
+    public Uri getImageUri(Context context, String filePath) {
+        File file = new File(filePath);
+        String authority = context.getPackageName() + ".fileprovider"; // packageName 기반으로 authority 생성
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            // Android 7.0 이상에서는 FileProvider 사용
+            return FileProvider.getUriForFile(context, authority, file);
+        } else {
+            // Android 7.0 미만에서는 Uri.fromFile 사용
+            return Uri.fromFile(file);
         }
     }
 
