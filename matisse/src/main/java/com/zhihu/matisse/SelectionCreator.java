@@ -379,10 +379,6 @@ public final class SelectionCreator {
         Intent cropIntent = new Intent(activity, MatisseImageCropActivity.class);
         String[] storedFileNames = new String[imageList.length];
 
-        for (int i = 0; i < uriList.length; i++) {
-            Log.d("tetetetetet ㅅ", String.valueOf(uriList[i]));
-        }
-
         Calendar calendar = Calendar.getInstance();
         String yyyymmddhhmmss = String.format(Locale.getDefault(), "%04d%02d%02d%02d%02d%02d",
                 calendar.get(Calendar.YEAR),

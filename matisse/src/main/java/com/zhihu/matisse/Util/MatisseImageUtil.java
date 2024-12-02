@@ -6,18 +6,13 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.graphics.Rect;
 import android.net.Uri;
-import android.os.ParcelFileDescriptor;
+import android.os.Build;
 import android.provider.MediaStore;
-import android.text.TextUtils;
-
+import androidx.core.content.FileProvider;
 import androidx.exifinterface.media.ExifInterface;
-
 import java.io.File;
-import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -30,6 +25,10 @@ class MatisseImageUtil {
 
     public static Bitmap processImage(Context context, String filePath, int maxDimension) throws IOException {
         Uri imageUri = getImageUri(context, filePath);
+
+        if(imageUri == null && filePath.startsWith(context.getCacheDir().getAbsolutePath())){
+            imageUri = getCacheImageUri(context, filePath);
+        }
 
         if (imageUri == null) {
             throw new FileNotFoundException("File not found or inaccessible: " + filePath);
@@ -151,5 +150,19 @@ class MatisseImageUtil {
 
         return null;
     }
+
+    public static Uri getCacheImageUri(Context context, String filePath) {
+        File file = new File(filePath);
+        String authority = context.getPackageName() + ".fileprovider"; // packageName 기반으로 authority 생성
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            // Android 7.0 이상에서는 FileProvider 사용
+            return FileProvider.getUriForFile(context, authority, file);
+        } else {
+            // Android 7.0 미만에서는 Uri.fromFile 사용
+            return Uri.fromFile(file);
+        }
+    }
+
 
 }

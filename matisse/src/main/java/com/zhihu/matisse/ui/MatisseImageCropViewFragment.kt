@@ -156,24 +156,6 @@ class MatisseImageCropViewFragment : Fragment() {
 
     }
 
-    fun saveBitmapAsFile(bitmap: Bitmap, context: Context): File? {
-        return try {
-            // 저장할 파일 경로 지정
-            val savePath = context.cacheDir.path + "/images"
-            val file = storedImageFileName?.let { File(savePath, it) }
-
-            // OutputStream을 통해 Bitmap을 JPG로 저장
-            file?.outputStream().use { outputStream ->
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
-            }
-
-            file // 저장된 파일 반환
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null // 저장 실패 시 null 반환
-        }
-    }
-
 
     override fun onDestroyView() {
         super.onDestroyView()
