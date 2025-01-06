@@ -182,7 +182,7 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
 
                 for (int i = 0; i < fileListArrays.length; i++) {
                     if(i == 0){
-                        fileListArrays[0] = "https://firebasestorage.googleapis.com/v0/b/project-2545831719973302142/o/resources%2Fbackgrounds%2Fall%2Fai%2Fbg_ai_007.jpg?alt=media&token=faf0e32b-834c-4a63-b533-ff6c6127a2f9";
+                        fileListArrays[0] = "https://firebasestorage.googleapis.com/v0/b/thedaybefore-ops/o/backgrounds%2Fgradient%2Fbg_pattern_005.webp?alt=media&token=26e964c0-e538-4938-a4ea-2177e986fc96";
                     }
                 }
                 //크롭만 사용할때 예시

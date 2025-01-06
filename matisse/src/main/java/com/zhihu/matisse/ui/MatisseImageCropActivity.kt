@@ -50,7 +50,7 @@ class MatisseImageCropActivity : AppCompatActivity() {
     private var storedImageFileNameArrays: Array<String>? = null
     private var storeFilePath: String? = null
 
-    private var isCheckUri: Boolean = false
+    private var isCheckUri: Boolean = false //유저 갤러리 사진인지 제공하는 일러스트인지 체크하는 변수
 
     var linearBottomButtonEdit: LinearLayout? = null
     private var toolbar: Toolbar? = null
@@ -192,7 +192,7 @@ class MatisseImageCropActivity : AppCompatActivity() {
             // UCrop 설정
             val uCrop = UCrop.of(uri, outputUri)
             val uCropOption = UCrop.Options()
-            uCropOption.setCompressionQuality(25)
+            uCropOption.setCompressionQuality(80)
             uCropOption.withAspectRatio(useCropRatio[0], useCropRatio[1])
             uCropOption.setFreeStyleCropEnabled(true)
             uCropOption.withMaxResultSize(1920, 1920)
@@ -275,11 +275,16 @@ class MatisseImageCropActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == UCrop.REQUEST_CROP && resultCode == RESULT_OK) {
             val resultUri = UCrop.getOutput(data!!)
-            // 결과 URI 사용
-            resultUri?.path?.let {
-                imagePathUriArrays?.set(currentPage, it)
-                imagePathArrays?.set(currentPage, it)
-                imageCropViewPagerAdapter!!.cropChangImage(currentPage, it)
+
+            val file = File(resultUri?.path ?: "")
+            if (file.exists()) {
+                val sourceUri = Uri.fromFile(file)
+                // 결과 URI 사용
+                resultUri?.path?.let {
+                    imagePathUriArrays?.set(currentPage, sourceUri.toString())
+                    imagePathArrays?.set(currentPage, sourceUri.toString())
+                    imageCropViewPagerAdapter!!.cropChangImage(currentPage, it)
+                }
             }
 
             isCroppedImageAvailable = true
