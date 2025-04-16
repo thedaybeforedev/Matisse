@@ -448,6 +448,7 @@ public class MatisseActivity extends AppCompatActivity implements
             mButtonPreview.setEnabled(true);
             mButtonApply.setText(R.string.image_picker_apply_default);
             mButtonApply.setEnabled(true);
+            mButtonApply.performClick();
         } else {
             mButtonPreview.setEnabled(true);
             mButtonApply.setEnabled(true);

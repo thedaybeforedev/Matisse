@@ -156,6 +156,11 @@ public class AlbumMediaAdapter extends
                 }
             }
         }
+        if(mSelectionSpec.singleSelectionModeEnabled()){
+            mediaGrid.setCheckViewVisibility(View.INVISIBLE);
+        }else{
+            mediaGrid.setCheckViewVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -180,7 +185,7 @@ public class AlbumMediaAdapter extends
             if (checkedNum == CheckView.UNCHECKED) {
                 if (assertAddSelection(holder.itemView.getContext(), item)) {
                     mSelectedCollection.add(item);
-                    notifyCheckStateChanged();
+                    notifyCheckStateChanged(item);
                 }else if(mSelectedCollection.maxSelectableReached()){
 //                    Toast.makeText(holder.itemView.getContext(), "maxSelectableReached", Toast.LENGTH_LONG).show();
 //                    mSelectionSpec.onSelectedListener.onMaxSelectableReached();
@@ -190,25 +195,28 @@ public class AlbumMediaAdapter extends
                 }
             } else {
                 mSelectedCollection.remove(item);
-                notifyCheckStateChanged();
+                notifyCheckStateChanged(item);
             }
         } else {
             if (mSelectedCollection.isSelected(item)) {
                 mSelectedCollection.remove(item);
-                notifyCheckStateChanged();
+                notifyCheckStateChanged(item);
             } else {
                 if (assertAddSelection(holder.itemView.getContext(), item)) {
                     mSelectedCollection.add(item);
-                    notifyCheckStateChanged();
+                    notifyCheckStateChanged(item);
                 }
             }
         }
     }
 
-    private void notifyCheckStateChanged() {
+    private void notifyCheckStateChanged(Item item) {
         notifyDataSetChanged();
         if (mCheckStateListener != null) {
             mCheckStateListener.onUpdate();
+            if(mSelectionSpec.singleSelectionModeEnabled()) {
+                mSelectedCollection.remove(item);
+            }
         }
     }
 
