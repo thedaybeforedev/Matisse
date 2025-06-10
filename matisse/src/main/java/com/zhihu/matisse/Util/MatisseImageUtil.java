@@ -26,8 +26,8 @@ class MatisseImageUtil {
     public static Bitmap processImage(Context context, String filePath, int maxDimension) throws IOException {
         Uri imageUri = getImageUri(context, filePath);
 
-        if(imageUri == null && filePath.startsWith(context.getFilesDir().getAbsolutePath())){
-            imageUri = getfilesImageUri(context, filePath);
+        if(imageUri == null && filePath.startsWith(context.getCacheDir().getAbsolutePath())){
+            imageUri = getCacheImageUri(context, filePath);
         }
 
         if (imageUri == null) {
@@ -151,7 +151,7 @@ class MatisseImageUtil {
         return null;
     }
 
-    public static Uri getfilesImageUri(Context context, String filePath) {
+    public static Uri getCacheImageUri(Context context, String filePath) {
         File file = new File(filePath);
         String authority = context.getPackageName() + ".fileprovider"; // packageName 기반으로 authority 생성
 
