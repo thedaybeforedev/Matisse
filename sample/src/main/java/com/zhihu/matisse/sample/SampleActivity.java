@@ -152,10 +152,12 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
 
                 for (int i = 0; i < fileListArray.length; i++) {
                     if(i == 0){
-                        fileListArray[0] = "/data/user/0/com.zhihu.matisse.sample/cache/images/20241202155943_0.jpg";
+                        String path = this.getFilesDir().getPath();
+                        fileListArray[0] = path + "/images/20250610160631_0.jpg";
                     }
                     else if(i == 1){
-                        fileListArray[1] = "/data/user/0/com.zhihu.matisse.sample/cache/images/20240906164522_1.jpg";
+                        String path = this.getFilesDir().getPath();
+                        fileListArray[1] = path + "/images/20250610160631_1.jpg";
                     }else if(i == 2){
                         fileListArray[2] = "/data/user/0/com.zhihu.matisse.sample/cache/images/20240906164522_2.jpg";
                     }

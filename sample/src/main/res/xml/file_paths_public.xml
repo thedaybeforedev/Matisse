@@ -27,4 +27,8 @@
         name="cache"
         path="." />
 
+    <files-path
+        name="files"
+        path="." />
+
 </paths>
