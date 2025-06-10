@@ -72,7 +72,7 @@ class MatisseImageCropViewPagerAdapter(fm: FragmentManager?, var mContext: Conte
                 return fragment.imagePath!!
             }else{
                 if(isCheckUri){
-                    val file = File("${mContext.cacheDir}/images", storedImageFileNameList?.get(position) ?: storedImageFileNameList?.get(0))
+                    val file = File("${mContext.filesDir}/images", storedImageFileNameList?.get(position) ?: storedImageFileNameList?.get(0))
                     var path: String? = null
                     path = downloadImageToFile(fragment.imagePath!!, file)
                     return path
@@ -89,7 +89,7 @@ class MatisseImageCropViewPagerAdapter(fm: FragmentManager?, var mContext: Conte
     }
 
     private fun saveBitmapToAppStorage(context: Context, bitmap: Bitmap, compressFormat: Bitmap.CompressFormat = Bitmap.CompressFormat.JPEG, quality: Int = 100, fileName: String): File? {
-        val appSpecificDir = "${context.cacheDir}/images"
+        val appSpecificDir = "${context.filesDir}/images"
         val file = File(appSpecificDir, fileName)
         if (!File(appSpecificDir).exists()) {
             File(appSpecificDir).mkdirs()  // 폴더가 없으면 생성

@@ -113,7 +113,7 @@ class MatisseImageCropActivity : AppCompatActivity() {
             }
         }
 
-        val storePath = storeFilePath ?: File("$cacheDir/images").absolutePath
+        val storePath = storeFilePath ?: File("$filesDir/images").absolutePath
         val imageDir = File(storePath)
         if (!imageDir.exists()) {
             // 디렉토리가 존재하지 않으면 생성
@@ -186,7 +186,7 @@ class MatisseImageCropActivity : AppCompatActivity() {
             }else{
                 uri = Uri.parse(imagePath)
             }
-            val outputUri = Uri.fromFile(File("${cacheDir}/images",
+            val outputUri = Uri.fromFile(File("${filesDir}/images",
                 storedImageFileNameArrays?.get(currentPage) ?: storedImageFileNameArrays?.get(0)
             ))
             // UCrop 설정

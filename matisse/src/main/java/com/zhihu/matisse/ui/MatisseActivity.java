@@ -542,7 +542,7 @@ public class MatisseActivity extends AppCompatActivity implements
                 cropIntent.putExtra(MatisseImageCropActivity.PARAM_TYPE_URI, mSpec.isTypeUri);
                 cropIntent.putExtra(MatisseImageCropActivity.PARAM_CROP_RATIO, mSpec.cropRatio);
                 cropIntent.putExtra(MatisseImageCropActivity.PARAM_STORE_FILE_NAME_ARRAY, storedFileNames);
-                String storePath = new File(getCacheDir().toString() + "/images").getAbsolutePath();
+                String storePath = new File(getFilesDir().toString() + "/images").getAbsolutePath();
 
                 cropIntent.putExtra(MatisseImageCropActivity.PARAM_STORE_FILE_PATH, storePath);
                 activityResultLauncher.launch(cropIntent);
