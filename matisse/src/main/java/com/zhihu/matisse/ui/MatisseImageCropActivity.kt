@@ -19,9 +19,12 @@ import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 import com.google.android.material.appbar.AppBarLayout
 import com.yalantis.ucrop.UCrop
@@ -64,7 +67,23 @@ class MatisseImageCropActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContentView(R.layout.activity_matisse_imagecrop)
+
+        val root = findViewById<View>(R.id.relativeContainer) // XML에서 android:id="@+id/root_container"
+
+        ViewCompat.setOnApplyWindowInsetsListener(root) { v: View, insets: WindowInsetsCompat ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+
+            v.setPadding(
+                v.paddingLeft,
+                bars.top,
+                v.paddingRight,
+                bars.bottom
+            )
+            WindowInsetsCompat.CONSUMED
+        }
+
         onBindLayout()
         onBindData()
     }
@@ -104,7 +123,7 @@ class MatisseImageCropActivity : AppCompatActivity() {
             currentPage = intent.getIntExtra(BUNDLE_POSITION, 0)
             storeFilePath = intent.getStringExtra(PARAM_STORE_FILE_PATH)
             isCheckUri = intent.getBooleanExtra(PARAM_TYPE_URI, false)
-            useCropRatio = intent.getSerializableExtra(PARAM_CROP_RATIO,) as ArrayList<Float>
+            useCropRatio = intent.getSerializableExtra(PARAM_CROP_RATIO) as ArrayList<Float>
             imageCropViewPagerAdapter = MatisseImageCropViewPagerAdapter(supportFragmentManager, this, imagePathArrays?.toMutableList(), imagePathUriArrays?.toMutableList(), storedImageFileNameArrays?.toMutableList() ,storeFilePath, isCheckUri)
             viewPagerImageCrop!!.adapter = imageCropViewPagerAdapter
             viewPagerImageCrop!!.addOnPageChangeListener(viewPagerOnPageChangeListener)

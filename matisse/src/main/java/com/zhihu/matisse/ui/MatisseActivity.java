@@ -48,6 +48,9 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 
 import com.karumi.dexter.Dexter;
@@ -87,7 +90,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
-
+import androidx.activity.EdgeToEdge;
 /**
  * Main Activity to display albums and media content (images/videos) in each album
  * and also support media selecting operations.
@@ -171,8 +174,25 @@ public class MatisseActivity extends AppCompatActivity implements
             finish();
             return;
         }
+
+        EdgeToEdge.enable(this);
+
         setContentView(R.layout.activity_matisse);
 
+        View root = findViewById(R.id.root);      // XML에서 android:id="@+id/root_container"
+
+        ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
+            Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+
+            v.setPadding(
+                    v.getPaddingLeft(),
+                    bars.top,
+                    v.getPaddingRight(),
+                    bars.bottom
+            );
+
+            return WindowInsetsCompat.CONSUMED;
+        });
 
         if (mSpec.needOrientationRestriction()) {
             setRequestedOrientation(mSpec.orientation);
