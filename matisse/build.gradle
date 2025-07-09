@@ -6,11 +6,11 @@ apply plugin: 'kotlin-kapt'
 
 android {
     namespace "com.zhihu.matisse"
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
-        minSdkVersion 14
-        targetSdkVersion 29
+        minSdkVersion 21
+        targetSdkVersion 35
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -46,7 +46,7 @@ dependencies {
     compileOnly 'com.squareup.picasso:picasso:2.5.2'
 
     //자체 라이브러리들
-    implementation 'com.github.yalantis:ucrop:2.2.6'
+    implementation 'com.github.jens-muenker:uCrop-n-Edit:4.1.0-non-native'
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
 

@@ -20,6 +20,7 @@ import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
@@ -28,6 +29,8 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 import com.google.android.material.appbar.AppBarLayout
 import com.yalantis.ucrop.UCrop
+import com.yalantis.ucrop.model.AspectRatio
+import com.yalantis.ucrop.view.CropImageView
 import com.zhihu.matisse.R
 import com.zhihu.matisse.adapter.MatisseImageCropViewPagerAdapter
 import com.zhihu.matisse.data.AspectRatios
@@ -63,6 +66,29 @@ class MatisseImageCropActivity : AppCompatActivity() {
 
     var isCroppedImageAvailable = false
         private set
+
+    private val uCropLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK && result.data != null) {
+                val resultUri = UCrop.getOutput(result.data!!)
+
+                val file = File(resultUri?.path ?: "")
+                if (file.exists()) {
+                    val sourceUri = Uri.fromFile(file)
+                    // 결과 URI 사용
+                    resultUri?.path?.let {
+                        imagePathUriArrays?.set(currentPage, sourceUri.toString())
+                        imagePathArrays?.set(currentPage, sourceUri.toString())
+                        imageCropViewPagerAdapter!!.cropChangImage(currentPage, it)
+                    }
+                }
+
+                isCroppedImageAvailable = true
+            } else if (result.resultCode == UCrop.RESULT_ERROR) {
+                val cropError = UCrop.getError(result.data!!)
+
+            }
+        }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -212,12 +238,18 @@ class MatisseImageCropActivity : AppCompatActivity() {
             val uCrop = UCrop.of(uri, outputUri)
             val uCropOption = UCrop.Options()
             uCropOption.setCompressionQuality(80)
-            uCropOption.withAspectRatio(useCropRatio[0], useCropRatio[1])
+            uCropOption.setAspectRatioOptions(2,  // 2 is the index of the default selected ratio
+                AspectRatio("1:2", 1F, 2F),
+                AspectRatio("3:4", 3F, 4F),
+                AspectRatio("original", CropImageView.DEFAULT_ASPECT_RATIO, CropImageView.DEFAULT_ASPECT_RATIO),
+                AspectRatio("16:9", 16F, 9F),
+                AspectRatio("1:1", 1F, 1F)
+            )
             uCropOption.setFreeStyleCropEnabled(true)
             uCropOption.withMaxResultSize(1920, 1920)
             uCrop.withOptions(uCropOption);
 
-            uCrop.start(this@MatisseImageCropActivity, UCrop.REQUEST_CROP)
+            uCrop.start(this@MatisseImageCropActivity, uCropLauncher)
         } else {
             Log.e("UCropError", "Invalid image path: $imagePath")
             // Handle error: Show a message or take appropriate action
