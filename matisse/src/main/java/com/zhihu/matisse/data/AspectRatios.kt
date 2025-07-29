@@ -9,4 +9,5 @@ public object AspectRatios {
     val ratio_1_1 = arrayListOf(1f, 1f)
     val ratio_3_4 = arrayListOf(3f, 4f)
     val ratio_9_16 = arrayListOf(9f, 16f)
+    val ratio_3_2 = arrayListOf(3f, 2f)
 }

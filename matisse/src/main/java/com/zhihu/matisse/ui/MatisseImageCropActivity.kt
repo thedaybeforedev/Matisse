@@ -238,18 +238,19 @@ class MatisseImageCropActivity : AppCompatActivity() {
             val uCrop = UCrop.of(uri, outputUri)
             val uCropOption = UCrop.Options()
             uCropOption.setCompressionQuality(80)
-            uCropOption.setAspectRatioOptions(2,  // 2 is the index of the default selected ratio
-                AspectRatio("1:2", 1F, 2F),
-                AspectRatio("3:4", 3F, 4F),
-                AspectRatio("original", CropImageView.DEFAULT_ASPECT_RATIO, CropImageView.DEFAULT_ASPECT_RATIO),
-                AspectRatio("16:9", 16F, 9F),
-                AspectRatio("1:1", 1F, 1F)
+            uCropOption.setAspectRatioOptions(
+                2,
+                AspectRatio("1:1", AspectRatios.ratio_1_1[0], AspectRatios.ratio_1_1[1]),
+                AspectRatio("3:4", AspectRatios.ratio_3_4[0], AspectRatios.ratio_3_4[1]),
+                AspectRatio("Original", AspectRatios.ratioFree[0], AspectRatios.ratioFree[1]),
+                AspectRatio("3:2", AspectRatios.ratio_3_2[0], AspectRatios.ratio_3_2[1]),
+                AspectRatio("16:9", AspectRatios.ratio_16_9[0], AspectRatios.ratio_16_9[1])
             )
             uCropOption.setFreeStyleCropEnabled(true)
             uCropOption.withMaxResultSize(1920, 1920)
             uCrop.withOptions(uCropOption);
 
-            uCrop.start(this@MatisseImageCropActivity, uCropLauncher)
+            uCrop.start(this@MatisseImageCropActivity, UCrop.REQUEST_CROP)
         } else {
             Log.e("UCropError", "Invalid image path: $imagePath")
             // Handle error: Show a message or take appropriate action

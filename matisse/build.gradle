@@ -46,7 +46,7 @@ dependencies {
     compileOnly 'com.squareup.picasso:picasso:2.5.2'
 
     //자체 라이브러리들
-    implementation 'com.github.jens-muenker:uCrop-n-Edit:4.1.0-non-native'
+    implementation 'com.github.thedaybeforedev:uCrop:1.0.1'
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
 

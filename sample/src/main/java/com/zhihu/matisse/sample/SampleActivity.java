@@ -37,6 +37,7 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -220,43 +221,65 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
     private void checkStoragePermission() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            proceedWithStorageAccess();
-            return;
+
+        String[] permissions;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // API 33+
+            // 새 미디어 권한
+            permissions = new String[] {
+                    Manifest.permission.READ_MEDIA_IMAGES,
+                    Manifest.permission.READ_MEDIA_VIDEO,
+                    Manifest.permission.READ_MEDIA_AUDIO
+            };
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) { // API 29~32
+            permissions = new String[] { Manifest.permission.READ_EXTERNAL_STORAGE };
+        } else { // API 28 이하
+            permissions = new String[] {
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+            };
         }
 
-        String[] permissions = {
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.READ_EXTERNAL_STORAGE
-        };
-
-        List<String> permissionsToRequest = new ArrayList<>();
-        for (String permission : permissions) {
-            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
-                permissionsToRequest.add(permission);
+        List<String> toRequest = new ArrayList<>();
+        for (String p : permissions) {
+            if (ContextCompat.checkSelfPermission(this, p)
+                    != PackageManager.PERMISSION_GRANTED) {
+                toRequest.add(p);
             }
         }
 
-        if (!permissionsToRequest.isEmpty()) {
-            ActivityCompat.requestPermissions(this, permissionsToRequest.toArray(new String[0]), PERMISSION_REQUEST_CODE);
+        if (!toRequest.isEmpty()) {
+            requestPermissions(
+                    toRequest.toArray(new String[0]),
+                    PERMISSION_REQUEST_CODE
+            );
         } else {
             proceedWithStorageAccess();
         }
     }
 
-    // 권한 요청 결과 처리
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if (requestCode == PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // 권한이 허용된 경우
+            boolean allGranted = true;
+            for (int g : grantResults) {          // Stream 대신 루프
+                if (g != PackageManager.PERMISSION_GRANTED) {
+                    allGranted = false;
+                    break;
+                }
+            }
+
+            if (allGranted) {
                 proceedWithStorageAccess();
             } else {
-                // 권한이 거부된 경우
-                Toast.makeText(this, "Storage permission denied", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this,
+                        "Storage permission denied", Toast.LENGTH_SHORT).show();
             }
         }
     }
