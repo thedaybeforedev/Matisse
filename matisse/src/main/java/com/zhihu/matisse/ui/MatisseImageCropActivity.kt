@@ -25,6 +25,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 import com.google.android.material.appbar.AppBarLayout
@@ -125,7 +126,6 @@ class MatisseImageCropActivity : AppCompatActivity() {
             imageCropStart()
         })
         setToolbar()
-        setStatusbarTransparent(false)
         setStatusBarAndNavigationBarColors()
 
     }
@@ -349,32 +349,8 @@ class MatisseImageCropActivity : AppCompatActivity() {
         }
     }
 
-
-
-    fun setStatusbarTransparent(useStatusBarHeight: Boolean = true) {
-
-        if (useStatusBarHeight && findViewById<View?>(R.id.appBarLayout) != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            val appBarLayout = findViewById<AppBarLayout>(R.id.appBarLayout)
-            appBarLayout.setPadding(0, getStatusBarHeight(this), 0, 0)
-        }
-
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-        }
-        //make fully Android Transparent Status bar
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            setWindowFlag(this, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, false)
-            window.statusBarColor = ContextCompat.getColor(this, R.color.paletteTransparent)
-        }
-    }
-
     fun setStatusBarAndNavigationBarColors() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            window.navigationBarColor = ContextCompat.getColor(this, R.color.paletteTransparent)
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) window.navigationBarDividerColor = ContextCompat.getColor(this, R.color.paletteTransparent)
-            window.statusBarColor = ContextCompat.getColor(this, R.color.paletteTransparent)
-        }
+
         if (isDarkMode(this)) {
             clearLightModeStatusBar()
 
@@ -383,41 +359,14 @@ class MatisseImageCropActivity : AppCompatActivity() {
         }
     }
 
-
-    fun getStatusBarHeight(context: Context): Int {
-        var result = context.resources.getDimension(R.dimen.appbar_padding_top).toInt()
-        val resourceId = context.resources.getIdentifier("status_bar_height", "dimen", "android")
-        if (resourceId > 0) result = context.resources.getDimensionPixelSize(resourceId)
-        return result
-    }
-
-    fun setWindowFlag(activity: Activity, bits: Int, on: Boolean) {
-        val win = activity.window
-        val winParams = win.attributes
-        if (on) {
-            winParams.flags = winParams.flags or bits
-        } else {
-            winParams.flags = winParams.flags and bits.inv()
-        }
-        win.attributes = winParams
-    }
-
     private fun setLightModeStatusBar() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val decor = window.decorView
-            decor.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-        }
+        val controller = WindowCompat.getInsetsController(window, window.decorView)
+        controller.isAppearanceLightStatusBars = true
     }
 
     fun clearLightModeStatusBar(isChangeNavigation: Boolean = true) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val decor = window.decorView
-            window.statusBarColor = Color.BLACK
-            decor.systemUiVisibility = 0 // 시스템 UI 플래그 초기화 (Light Status Bar 해제)
-        }
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP) {
-            window.statusBarColor = Color.BLACK
-        }
+        val controller = WindowCompat.getInsetsController(window, window.decorView)
+        controller.isAppearanceLightStatusBars = false
     }
 
 
