@@ -9,14 +9,16 @@ import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
+import androidx.annotation.Nullable;
 import androidx.core.content.FileProvider;
 import androidx.exifinterface.media.ExifInterface;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-class MatisseImageUtil {
+public class MatisseImageUtil {
 
     private MatisseImageUtil() {
 
@@ -161,6 +163,56 @@ class MatisseImageUtil {
         } else {
             // Android 7.0 미만에서는 Uri.fromFile 사용
             return Uri.fromFile(file);
+        }
+    }
+
+    @Nullable
+    public static File saveBitmapToFile(Context context, Bitmap bitmap, String fileName) {
+        return saveBitmapToFile(context, bitmap, Bitmap.CompressFormat.JPEG, 80, fileName);
+    }
+
+    /** 원하는 포맷 + 품질 지정 */
+    @Nullable
+    public static File saveBitmapToFile(Context context,
+                                        Bitmap bitmap,
+                                        Bitmap.CompressFormat format,
+                                        int quality,
+                                        String fileName) {
+        return saveBitmapToAppStorage(context, bitmap, format, quality, fileName);
+    }
+
+    /** JPEG / 품질 100 기본값 */
+    @Nullable
+    public static File saveBitmapToAppStorage(Context context, Bitmap bitmap, String fileName) {
+        return saveBitmapToAppStorage(context, bitmap, Bitmap.CompressFormat.JPEG, 100, fileName);
+    }
+
+    /** 실제 저장 처리 */
+    @Nullable
+    public static File saveBitmapToAppStorage(Context context,
+                                              Bitmap bitmap,
+                                              Bitmap.CompressFormat format,
+                                              int quality,
+                                              String fileName) {
+        File dir = new File(context.getFilesDir(), "images");
+        if (!dir.exists() && !dir.mkdirs()) {
+            return null;
+        }
+
+        File outFile = new File(dir, fileName);
+
+        try (FileOutputStream fos = new FileOutputStream(outFile)) {
+            boolean ok = bitmap.compress(format, quality, fos);
+            fos.flush();
+            if (!ok) {
+                // compress 실패 시 깨진 파일은 지워줍니다
+                //noinspection ResultOfMethodCallIgnored
+                outFile.delete();
+                return null;
+            }
+            return outFile;
+        } catch (IOException e) {
+            return null;
         }
     }
 

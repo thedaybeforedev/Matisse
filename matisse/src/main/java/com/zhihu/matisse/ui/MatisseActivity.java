@@ -423,8 +423,6 @@ public class MatisseActivity extends AppCompatActivity implements
             }
         } else if (requestCode == REQUEST_CODE_OTHER_APP && resultCode == RESULT_OK) {
             if (data != null) {
-
-
                 Uri uri = data.getData();
                 ArrayList<String> selectedPaths = new ArrayList<>();
                 ArrayList<Uri> selectedUris = new ArrayList<>();
@@ -438,19 +436,40 @@ public class MatisseActivity extends AppCompatActivity implements
                 String path = PathUtils.getPath(this, uri);
                 if (TextUtils.isEmpty(path)) {
                     File file = FileUtils.pickedExistingPicture(this, uri);
+                    assert file != null;
                     path = file.getAbsolutePath();
                 }
                 selectedPaths.add(path);
 
+                Intent cropIntent = new Intent(this, MatisseImageCropActivity.class);
+                String[] fileNames = new String[selectedPaths.size()];
+                String[] fileUrl = new String[selectedPaths.size()];
+                String[] storedFileNames = new String[selectedPaths.size()];
 
-                Intent result = new Intent();
-                result.putParcelableArrayListExtra(EXTRA_RESULT_SELECTION, selectedUris);
-                result.putStringArrayListExtra(EXTRA_RESULT_SELECTION_PATH, selectedPaths);
-//                Toast.makeText(MatisseActivity.this, "uri=" + uri.toString(), Toast.LENGTH_LONG).show();
+                Calendar calendar = Calendar.getInstance();
+                String yyyymmddhhmmss = String.format(Locale.getDefault(), "%04d%02d%02d%02d%02d%02d",
+                        calendar.get(Calendar.YEAR),
+                        calendar.get(Calendar.MONTH) + 1, // MONTH는 0부터 시작하므로 +1
+                        calendar.get(Calendar.DAY_OF_MONTH),
+                        calendar.get(Calendar.HOUR_OF_DAY),
+                        calendar.get(Calendar.MINUTE),
+                        calendar.get(Calendar.SECOND));
 
-                result.putExtra(EXTRA_RESULT_ORIGINAL_ENABLE, mOriginalEnable);
-                setResult(RESULT_OK, result);
-                finish();
+                for (int i = 0; i < fileNames.length; i++) {
+                    fileNames[i] = selectedPaths.get(i);
+                    fileUrl[i] = selectedUris.get(i).toString();
+                    storedFileNames[i] = String.format(Locale.getDefault(), "%s_%d.%s", yyyymmddhhmmss, i, "jpg");
+                }
+
+                cropIntent.putExtra(MatisseImageCropActivity.PARAM_IMAGEPATH_ARRAY, fileNames);
+                cropIntent.putExtra(MatisseImageCropActivity.PARAM_IMAGEURI_ARRAY, fileUrl);
+                cropIntent.putExtra(MatisseImageCropActivity.PARAM_TYPE_URI, mSpec.isTypeUri);
+                cropIntent.putExtra(MatisseImageCropActivity.PARAM_CROP_RATIO, mSpec.cropRatio);
+                cropIntent.putExtra(MatisseImageCropActivity.PARAM_STORE_FILE_NAME_ARRAY, storedFileNames);
+                String storePath = new File(getFilesDir().toString() + "/images").getAbsolutePath();
+
+                cropIntent.putExtra(MatisseImageCropActivity.PARAM_STORE_FILE_PATH, storePath);
+                activityResultLauncher.launch(cropIntent);
 
             }
         }
