@@ -32,6 +32,10 @@ public class MatisseImageUtil {
             imageUri = getCacheImageUri(context, filePath);
         }
 
+        if(imageUri == null && filePath.startsWith(context.getFilesDir().getAbsolutePath())){
+            imageUri = getFileImageUri(context, filePath);
+        }
+
         if (imageUri == null) {
             throw new FileNotFoundException("File not found or inaccessible: " + filePath);
         }
@@ -151,6 +155,19 @@ public class MatisseImageUtil {
         }
 
         return null;
+    }
+
+    public static Uri getFileImageUri(Context context, String filePath) {
+        File file = new File(filePath);
+        String authority = context.getPackageName() + ".fileprovider"; // Manifest에 선언한 authority와 일치해야 함
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            // Android 7.0 이상: 반드시 FileProvider 사용
+            return FileProvider.getUriForFile(context, authority, file);
+        } else {
+            // Android 7.0 미만: file:// 사용 가능
+            return Uri.fromFile(file);
+        }
     }
 
     public static Uri getCacheImageUri(Context context, String filePath) {
