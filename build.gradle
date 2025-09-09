@@ -39,6 +39,7 @@ allprojects {
         mavenCentral()
         jcenter()
         maven { url 'https://jitpack.io' }
+        maven { url "https://www.jitpack.io" } // 보조 미러
     }
 }
 
