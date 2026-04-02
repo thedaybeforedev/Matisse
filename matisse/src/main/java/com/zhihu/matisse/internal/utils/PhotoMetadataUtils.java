@@ -22,11 +22,12 @@ import android.content.Context;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
-import android.media.ExifInterface;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
 import android.util.Log;
+
+import androidx.exifinterface.media.ExifInterface;
 
 import com.zhihu.matisse.MimeType;
 import com.zhihu.matisse.R;
@@ -155,16 +156,28 @@ public final class PhotoMetadataUtils {
     }
 
     private static boolean shouldRotate(ContentResolver resolver, Uri uri) {
-        ExifInterface exif;
+        InputStream inputStream = null;
         try {
-            exif = ExifInterfaceCompat.newInstance(getPath(resolver, uri));
+            inputStream = resolver.openInputStream(uri);
+            if (inputStream == null) {
+                return false;
+            }
+            ExifInterface exif = new ExifInterface(inputStream);
+            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, -1);
+            return orientation == ExifInterface.ORIENTATION_ROTATE_90
+                    || orientation == ExifInterface.ORIENTATION_ROTATE_270;
         } catch (IOException e) {
             Log.e(TAG, "could not read exif info of the image: " + uri);
             return false;
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    Log.w(TAG, "failed to close exif stream for: " + uri, e);
+                }
+            }
         }
-        int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, -1);
-        return orientation == ExifInterface.ORIENTATION_ROTATE_90
-                || orientation == ExifInterface.ORIENTATION_ROTATE_270;
     }
 
     public static float getSizeInMB(long sizeInBytes) {

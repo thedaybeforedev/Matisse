@@ -203,6 +203,7 @@ public class MatisseActivity extends AppCompatActivity implements
             if (mSpec.captureStrategy == null)
                 throw new RuntimeException("Don't forget to set CaptureStrategy.");
             mMediaStoreCompat.setCaptureStrategy(mSpec.captureStrategy);
+            mMediaStoreCompat.onRestoreInstanceState(savedInstanceState);
         }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -329,6 +330,9 @@ public class MatisseActivity extends AppCompatActivity implements
         mSelectedCollection.onSaveInstanceState(outState);
         mAlbumCollection.onSaveInstanceState(outState);
         outState.putBoolean("checkState", mOriginalEnable);
+        if (mMediaStoreCompat != null) {
+            mMediaStoreCompat.onSaveInstanceState(outState);
+        }
     }
 
     @Override
@@ -397,6 +401,11 @@ public class MatisseActivity extends AppCompatActivity implements
             // Just pass the data back to previous calling Activity.
             Uri contentUri = mMediaStoreCompat.getCurrentPhotoUri();
             String path = mMediaStoreCompat.getCurrentPhotoPath();
+            if (contentUri == null || path == null) {
+                setResult(RESULT_CANCELED);
+                finish();
+                return;
+            }
             ArrayList<Uri> selected = new ArrayList<>();
             selected.add(contentUri);
             ArrayList<String> selectedPath = new ArrayList<>();
