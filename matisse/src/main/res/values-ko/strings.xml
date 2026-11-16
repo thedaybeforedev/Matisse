@@ -15,6 +15,7 @@
   <string name="error_under_quality">화질이 너무 낮습니다.</string>
   <string name="error_over_quality">화질이 너무 높습니다.</string>
   <string name="error_file_type">지원되지 않는 파일 유형입니다.</string>
+  <string name="error_load_picked_image_failed">일부 사진을 불러오지 못했어요.</string>
   <string name="button_sure_default">적용</string>
   <string name="button_sure">적용(%1$d)</string>
   <string name="image_picker_apply_default">다음</string>

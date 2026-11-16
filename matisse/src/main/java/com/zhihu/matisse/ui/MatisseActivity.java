@@ -465,15 +465,23 @@ public class MatisseActivity extends AppCompatActivity implements
                 selectedPaths = (ArrayList<String>) mSelectedCollection.asListOfString();
 
 
+                // 경로를 얻지 못한 사진(클라우드 사진, 권한 만료 등)은 건너뛰어 나머지 사진만 크롭으로 넘긴다
+                int addedCount = 0;
                 for (Uri uri : pickedUris) {
-                    selectedUris.add(uri);
-                    String path = PathUtils.getPath(this, uri);
-                    if (TextUtils.isEmpty(path)) {
-                        File file = FileUtils.pickedExistingPicture(this, uri);
-                        assert file != null;
-                        path = file.getAbsolutePath();
+                    String path = getPickedImagePath(uri);
+                    if (path == null) {
+                        continue;
                     }
+                    selectedUris.add(uri);
                     selectedPaths.add(path);
+                    addedCount++;
+                }
+                if (addedCount < pickedUris.size()) {
+                    Toast.makeText(this, R.string.error_load_picked_image_failed, Toast.LENGTH_SHORT).show();
+                }
+                // 외부 갤러리에서 고른 사진을 하나도 불러오지 못하면 크롭 화면으로 넘어가지 않는다
+                if (addedCount == 0) {
+                    return;
                 }
 
                 Intent cropIntent = new Intent(this, MatisseImageCropActivity.class);
@@ -507,6 +515,31 @@ public class MatisseActivity extends AppCompatActivity implements
                 activityResultLauncher.launch(cropIntent);
 
             }
+        }
+    }
+
+    /**
+     * 외부 갤러리에서 고른 사진의 파일 경로를 구한다.
+     * 경로를 바로 얻지 못하면 임시 폴더로 복사한 파일 경로를 쓴다.
+     *
+     * @param uri	외부 갤러리가 돌려준 사진 Uri
+     * @return	파일 경로. 복사까지 실패하거나 읽기 권한이 없으면 null
+     */
+    private String getPickedImagePath(Uri uri) {
+        try {
+            String path = PathUtils.getPath(this, uri);
+            if (!TextUtils.isEmpty(path)) {
+                return path;
+            }
+            File file = FileUtils.pickedExistingPicture(this, uri);
+            if (file == null) {
+                return null;
+            }
+            return file.getAbsolutePath();
+        } catch (SecurityException e) {
+            // 갤러리가 준 임시 읽기 권한이 없거나 만료된 경우
+            e.printStackTrace();
+            return null;
         }
     }
 

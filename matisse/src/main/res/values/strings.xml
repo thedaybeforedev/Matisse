@@ -32,6 +32,7 @@
     <string name="error_under_quality">Under quality</string>
     <string name="error_over_quality">Over quality</string>
     <string name="error_file_type">Unsupported file type</string>
+    <string name="error_load_picked_image_failed">Some photos couldn\'t be loaded.</string>
     <string name="error_type_conflict">Can\'t select images and videos at the same time</string>
     <string name="error_no_video_activity">No App found supporting video preview</string>
     <string name="error_over_original_size">Can\'t select the images larger than %1$d MB</string>
