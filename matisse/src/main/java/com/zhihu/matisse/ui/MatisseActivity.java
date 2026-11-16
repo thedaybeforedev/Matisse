@@ -315,9 +315,9 @@ public class MatisseActivity extends AppCompatActivity implements
                         return;
                     }
                     OtherPickerItem item = otherPickerItemList.get(v.getId());
-                    // 두 장 이상 더 고를 수 있을 때만 갤러리에 여러 장 선택을 요청한다
-                    boolean allowMultiple = mSelectedCollection.remainingSelectableCount() > 1;
-                    IntentUtils.callActionPicks(MatisseActivity.this, REQUEST_CODE_OTHER_APP, item.packageName, allowMultiple);
+                    // 남은 장수만큼만 갤러리에서 고를 수 있게 요청한다(2장 이상일 때만 여러 장 선택)
+                    int remainingCount = mSelectedCollection.remainingSelectableCount();
+                    IntentUtils.callActionPicks(MatisseActivity.this, REQUEST_CODE_OTHER_APP, item.packageName, remainingCount);
                 }
             });
             mlOtherPickerContainer.addView(layout);
