@@ -484,6 +484,18 @@ public class MatisseActivity extends AppCompatActivity implements
                     return;
                 }
 
+                // 크롭을 쓰지 않는 호출(setUseCrop(false))은 그리드 적용 버튼과 같이 선택 결과를 바로 돌려준다.
+                // 호출한 앱이 직접 크롭하는 화면에서 크롭이 두 번 열리지 않게 하기 위함이다.
+                if (!mSpec.isUseCrop) {
+                    Intent result = new Intent();
+                    result.putParcelableArrayListExtra(EXTRA_RESULT_SELECTION, selectedUris);
+                    result.putStringArrayListExtra(EXTRA_RESULT_SELECTION_PATH, selectedPaths);
+                    result.putExtra(EXTRA_RESULT_ORIGINAL_ENABLE, mOriginalEnable);
+                    setResult(RESULT_OK, result);
+                    finish();
+                    return;
+                }
+
                 Intent cropIntent = new Intent(this, MatisseImageCropActivity.class);
                 String[] fileNames = new String[selectedPaths.size()];
                 String[] fileUrl = new String[selectedPaths.size()];
