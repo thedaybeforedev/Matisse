@@ -88,7 +88,13 @@ public class AlbumMediaLoader extends CursorLoader {
                     + " AND "
                     + MediaStore.MediaColumns.MIME_TYPE + "=?"
                     + " AND " + MediaStore.MediaColumns.SIZE + ">0";
-    private static final String ORDER_BY = MediaStore.Images.Media.DATE_MODIFIED + " DESC";
+    // 갤러리 앱과 같은 순서로 보여주기 위한 정렬 기준.
+    // 찍은 시간(datetaken, ms)을 우선 쓰고, 없으면 수정 시간(date_modified, 초)을 ms로 맞춰 쓴다.
+    // 수정 시간만 쓰면 카톡 저장·편집·기기 이전으로 파일이 다시 써진 사진이 찍은 날과 다른 자리에 섞인다.
+    // 같은 시간 값이 여러 장이면 _id로 순서를 고정한다.
+    static final String ORDER_BY = "COALESCE(" + MediaStore.Images.Media.DATE_TAKEN + ", "
+            + MediaStore.MediaColumns.DATE_MODIFIED + " * 1000) DESC, "
+            + MediaStore.Files.FileColumns._ID + " DESC";
     // ===============================================================
     private final boolean mEnableCapture;
 

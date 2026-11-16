@@ -39,6 +39,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.content.ClipData;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
@@ -314,7 +315,9 @@ public class MatisseActivity extends AppCompatActivity implements
                         return;
                     }
                     OtherPickerItem item = otherPickerItemList.get(v.getId());
-                    IntentUtils.callActionPicks(MatisseActivity.this, REQUEST_CODE_OTHER_APP, item.packageName);
+                    // 두 장 이상 더 고를 수 있을 때만 갤러리에 여러 장 선택을 요청한다
+                    boolean allowMultiple = mSelectedCollection.remainingSelectableCount() > 1;
+                    IntentUtils.callActionPicks(MatisseActivity.this, REQUEST_CODE_OTHER_APP, item.packageName, allowMultiple);
                 }
             });
             mlOtherPickerContainer.addView(layout);
@@ -401,7 +404,7 @@ public class MatisseActivity extends AppCompatActivity implements
             // Just pass the data back to previous calling Activity.
             Uri contentUri = mMediaStoreCompat.getCurrentPhotoUri();
             String path = mMediaStoreCompat.getCurrentPhotoPath();
-            if (contentUri == null || path == null) {
+            if (contentUri == null) {
                 setResult(RESULT_CANCELED);
                 finish();
                 return;
@@ -409,30 +412,51 @@ public class MatisseActivity extends AppCompatActivity implements
             ArrayList<Uri> selected = new ArrayList<>();
             selected.add(contentUri);
             ArrayList<String> selectedPath = new ArrayList<>();
-            selectedPath.add(path);
             Intent result = new Intent();
             result.putParcelableArrayListExtra(EXTRA_RESULT_SELECTION, selected);
+            if (path != null) {
+                selectedPath.add(path);
+            }
             result.putStringArrayListExtra(EXTRA_RESULT_SELECTION_PATH, selectedPath);
             setResult(RESULT_OK, result);
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)
                 MatisseActivity.this.revokeUriPermission(contentUri,
                         Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-            try {
-                new SingleMediaScanner(this.getApplicationContext(), path, new SingleMediaScanner.ScanListener() {
-                    @Override
-                    public void onScanFinish() {
-                        Log.i("SingleMediaScanner", "scan finish!");
-                    }
-                });
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
+            if (path != null) {
+                try {
+                    new SingleMediaScanner(this.getApplicationContext(), path, new SingleMediaScanner.ScanListener() {
+                        @Override
+                        public void onScanFinish() {
+                            Log.i("SingleMediaScanner", "scan finish!");
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    finish();
+                }
+            } else {
                 finish();
             }
         } else if (requestCode == REQUEST_CODE_OTHER_APP && resultCode == RESULT_OK) {
             if (data != null) {
-                Uri uri = data.getData();
+                List<Uri> pickedUris = getPickedUris(data);
+                if (pickedUris.isEmpty()) {
+                    return;
+                }
+                // 남은 장수보다 많이 고르면 앞에서부터 남은 장수만 쓰고 안내한다
+                int remainingCount = mSelectedCollection.remainingSelectableCount();
+                if (pickedUris.size() > remainingCount) {
+                    int maxSelectable = mSelectedCollection.count() + remainingCount;
+                    String cause = getResources().getQuantityString(
+                            R.plurals.error_over_count,
+                            maxSelectable,
+                            maxSelectable
+                    );
+                    Toast.makeText(this, cause, Toast.LENGTH_SHORT).show();
+                    pickedUris = pickedUris.subList(0, remainingCount);
+                }
                 ArrayList<String> selectedPaths = new ArrayList<>();
                 ArrayList<Uri> selectedUris = new ArrayList<>();
 
@@ -441,14 +465,16 @@ public class MatisseActivity extends AppCompatActivity implements
                 selectedPaths = (ArrayList<String>) mSelectedCollection.asListOfString();
 
 
-                selectedUris.add(uri);
-                String path = PathUtils.getPath(this, uri);
-                if (TextUtils.isEmpty(path)) {
-                    File file = FileUtils.pickedExistingPicture(this, uri);
-                    assert file != null;
-                    path = file.getAbsolutePath();
+                for (Uri uri : pickedUris) {
+                    selectedUris.add(uri);
+                    String path = PathUtils.getPath(this, uri);
+                    if (TextUtils.isEmpty(path)) {
+                        File file = FileUtils.pickedExistingPicture(this, uri);
+                        assert file != null;
+                        path = file.getAbsolutePath();
+                    }
+                    selectedPaths.add(path);
                 }
-                selectedPaths.add(path);
 
                 Intent cropIntent = new Intent(this, MatisseImageCropActivity.class);
                 String[] fileNames = new String[selectedPaths.size()];
@@ -484,6 +510,29 @@ public class MatisseActivity extends AppCompatActivity implements
         }
     }
 
+    /**
+     * 외부 갤러리 선택 결과에서 고른 사진 Uri 목록을 꺼낸다.
+     * 여러 장을 고르면 ClipData에, 한 장만 고르면 getData()에 담겨 온다.
+     *
+     * @param data	외부 갤러리가 돌려준 결과 Intent
+     * @return	고른 순서대로의 Uri 목록(없으면 빈 목록)
+     */
+    private List<Uri> getPickedUris(Intent data) {
+        List<Uri> pickedUris = new ArrayList<>();
+        ClipData clipData = data.getClipData();
+        if (clipData != null) {
+            for (int index = 0; index < clipData.getItemCount(); index++) {
+                Uri uri = clipData.getItemAt(index).getUri();
+                if (uri != null) {
+                    pickedUris.add(uri);
+                }
+            }
+        }
+        if (pickedUris.isEmpty() && data.getData() != null) {
+            pickedUris.add(data.getData());
+        }
+        return pickedUris;
+    }
 
     private void updateBottomToolbar() {
 

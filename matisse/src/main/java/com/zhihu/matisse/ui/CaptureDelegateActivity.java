@@ -94,7 +94,7 @@ public class CaptureDelegateActivity extends AppCompatActivity implements AlbumM
             // Just pass the data back to previous calling Activity.
             Uri contentUri = mMediaStoreCompat.getCurrentPhotoUri();
             String path = mMediaStoreCompat.getCurrentPhotoPath();
-            if (contentUri == null || path == null) {
+            if (contentUri == null) {
                 setResult(RESULT_CANCELED);
                 finish();
                 return;
@@ -102,27 +102,31 @@ public class CaptureDelegateActivity extends AppCompatActivity implements AlbumM
             ArrayList<Uri> selected = new ArrayList<>();
             selected.add(contentUri);
             ArrayList<String> selectedPath = new ArrayList<>();
-            selectedPath.add(path);
             Intent result = new Intent();
             result.putParcelableArrayListExtra(EXTRA_RESULT_SELECTION, selected);
+            if (path != null) {
+                selectedPath.add(path);
+            }
             result.putStringArrayListExtra(EXTRA_RESULT_SELECTION_PATH, selectedPath);
             setResult(RESULT_OK, result);
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
                 CaptureDelegateActivity.this.revokeUriPermission(contentUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
             }
 
-            try {
-
-                new SingleMediaScanner(this.getApplicationContext(), path, new SingleMediaScanner.ScanListener() {
-                    @Override
-                    public void onScanFinish() {
-                        Log.i("SingleMediaScanner", "scan finish!");
-                    }
-                });
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-
+            if (path != null) {
+                try {
+                    new SingleMediaScanner(this.getApplicationContext(), path, new SingleMediaScanner.ScanListener() {
+                        @Override
+                        public void onScanFinish() {
+                            Log.i("SingleMediaScanner", "scan finish!");
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    finish();
+                }
+            } else {
                 finish();
             }
         }

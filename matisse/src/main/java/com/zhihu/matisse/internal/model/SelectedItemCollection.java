@@ -201,6 +201,15 @@ public class SelectedItemCollection {
         return mItems.size() == currentMaxSelectable();
     }
 
+    /**
+     * 외부 갤러리에서 더 고를 수 있는 남은 장수.
+     *
+     * @return	최대 선택 수 - 지금 선택한 수 (0 미만이면 0)
+     */
+    public int remainingSelectableCount() {
+        return Math.max(0, currentMaxSelectable() - mItems.size());
+    }
+
     // depends
     private int currentMaxSelectable() {
         SelectionSpec spec = SelectionSpec.getInstance();
